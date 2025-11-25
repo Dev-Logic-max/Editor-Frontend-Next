@@ -1,13 +1,19 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useState } from 'react';
+
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+import { AIComparisonSidebar } from '@/components/layout/AISidebar';
 import { InviteModal } from '@/components/modal/InviteCollaboratorModal';
-import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
-import { useAuth } from '@/hooks/useAuth';
 
-import { GiQueenCrown } from "react-icons/gi";
+import { TbLayoutSidebarLeftCollapse } from "react-icons/tb";
+
+import { useAuth } from '@/hooks/useAuth';
+import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
+
 import { format } from 'date-fns';
 
 interface EditorHeaderProps {
@@ -17,11 +23,21 @@ interface EditorHeaderProps {
   activeUsers: any[];
   typingUsers?: string[];
   onTitleChange?: (title: string) => void;
+  aiHistory?: Array<{
+    original: string;
+    improved: string;
+    action: string;
+    timestamp: Date;
+    model?: string;
+    status?: 'pending' | 'accepted' | 'rejected' | 'error';
+  }>;
 }
 
-export function EditorHeader({ editor, title, onTitleChange, document, activeUsers, typingUsers = [] }: EditorHeaderProps) {
+export function EditorHeader({ editor, title, onTitleChange, document, activeUsers, typingUsers = [], aiHistory = [], }: EditorHeaderProps) {
   const { user } = useAuth();
   const { settings } = useEditorSettings();
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const isCreator = user?._id === document.creator._id;
   const creatorId = document.creator._id;
@@ -43,7 +59,7 @@ export function EditorHeader({ editor, title, onTitleChange, document, activeUse
   };
 
   return (
-    <div className={`px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3 ${layout === EditorLayout.Document ? '' : 'border-b'}`}>
+    <div className={`flex flex-col md:flex-row justify-between items-center gap-3 ${layout === EditorLayout.Document ? '' : 'px-3 py-2 border-b'}`}>
       {/* Document Title */}
       <Input
         value={title}
@@ -53,10 +69,21 @@ export function EditorHeader({ editor, title, onTitleChange, document, activeUse
       />
 
       <div className={`flex items-center ms-auto order-1 md:order-2 ${hasCollaborators && 'gap-3'}`}>
-        {isCreator && layout === EditorLayout.Editor && <InviteModal documentId={document._id} collaborators={hasCollaborators}/>}
+        {isCreator && layout === EditorLayout.Editor && (
+          <>
+            <Button size={'sm'} onClick={() => setInviteModalOpen(true)} className='shadow bg-linear-to-r from-blue-400/80 to-purple-400/80'>
+              {hasCollaborators ? "Manage Collaborators" : "Add Collaborator"}
+            </Button>
+            <InviteModal documentId={document._id} isOpen={inviteModalOpen} onClose={() => { setInviteModalOpen(false) }} />
+          </>
+        )}
 
         {/* New: Active Users */}
         <div className="flex items-center space-x-1">
+          <div className='p-1 me-2 rounded-md cursor-pointer hover:bg-gray-100' onClick={() => setSidebarOpen(true)}>
+            <TbLayoutSidebarLeftCollapse className='w-6 h-6'/>
+          </div>
+          <AIComparisonSidebar editor={editor} history={aiHistory} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}/>
           <div className="flex -space-x-2">
             {hasCollaborators && (
               <>
@@ -66,7 +93,7 @@ export function EditorHeader({ editor, title, onTitleChange, document, activeUse
                   const profilePhotoUrl = u?.avatar && `${process.env.NEXT_PUBLIC_API_URL}/uploads/profile/${u.avatar}`
                   return (
                     <Avatar key={u.clientId} title={u.name} className="w-10 h-10 border rounded-full relative shadow overflow-visible">
-                      <AvatarImage src={profilePhotoUrl} alt={initials} className='rounded-full'/>
+                      <AvatarImage src={profilePhotoUrl} alt={initials} className='rounded-full' />
                       <AvatarFallback className="bg-transparent text-xs" style={{ background: u.avatarGradient }}>{initials}</AvatarFallback>
                     </Avatar>
                   );

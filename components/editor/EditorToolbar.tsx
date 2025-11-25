@@ -1,23 +1,35 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { EmojiPicker } from '@/components/common/EmojiPicker';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaHighlighter, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+import { AIMenu } from '@/components/commands/AIMenu';
+import { EmojiPicker } from '@/components/common/EmojiPicker';
+import { ColorPicker } from '@/components/services/ColorPicker';
+import { ImageUploadModal } from '@/components/services/ImageUploadModal';
+import { TableInsertModal } from '@/components/services/TableInsertModal';
+
+import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaHighlighter, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload } from 'react-icons/fa';
+
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
-import toast from 'react-hot-toast';
 
 interface EditorToolbarProps {
   editor: any;
+  onAIStart?: (originalText: string, action: string) => void;
+  onAIComplete?: (originalText: string, result: string, action: string) => void;
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbarProps) {
   const { settings } = useEditorSettings();
   const [headingLevel, setHeadingLevel] = useState('Paragraph');
+  const [tableModalOpen, setTableModalOpen] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   const layout = settings.appearance.layout;
 
@@ -78,7 +90,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         title={title}
         className={`p-2 rounded-md transition-all ${active ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-300' : 'hover:bg-gray-100 text-gray-700'}`}
       >
-        <Icon className="h-4 w-4" />
+        <Icon />
       </Button>
     </motion.div>
   );
@@ -123,178 +135,244 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   if (!editor) return null;
 
   return (
-    <div className={`sticky top-0 z-0 bg-white/95 backdrop-blur-md border-b p-2 flex flex-wrap gap-2 items-center justify-center md:justify-between transition-all ${layout === EditorLayout.Document ? 'rounded-xl border m-2' : 'shadow-sm md:p-3'}`}>
-      {/* Left Section */}
-      <div className="flex flex-wrap items-center gap-1">
-        <IconButton
-          icon={FaBold}
-          title="Bold"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          active={editor.isActive('bold')}
+    <>
+      <div className={`sticky top-0 z-10 bg-white/95 backdrop-blur-md flex flex-wrap items-center justify-center md:justify-between transition-all ${layout === EditorLayout.Document ? 'rounded-xl border p-2 m-2' : 'shadow-sm md:p-3 border-b'}`}>
+        {/* Left Section */}
+        <div className="flex flex-wrap items-center gap-1">
+          <IconButton
+            icon={FaBold}
+            title="Bold"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            active={editor.isActive('bold')}
+          />
+          <IconButton
+            icon={FaItalic}
+            title="Italic"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            active={editor.isActive('italic')}
+          />
+          <IconButton
+            icon={FaUnderline}
+            title="Underline"
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            active={editor.isActive('underline')}
+          />
+          <IconButton
+            icon={FaHighlighter}
+            title="Highlight"
+            onClick={() => editor.chain().focus().toggleHighlight().run()}
+            active={editor.isActive('highlight')}
+          />
+          <ColorPicker editor={editor} type="text" />
+          <ColorPicker editor={editor} type="background" />
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+
+        {/* 🤖 AI Menu Component */}
+        <AIMenu
+          editor={editor}
+          onAIStart={onAIStart}
+          onAIComplete={onAIComplete}
         />
-        <IconButton
-          icon={FaItalic}
-          title="Italic"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          active={editor.isActive('italic')}
-        />
-        <IconButton
-          icon={FaUnderline}
-          title="Underline"
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          active={editor.isActive('underline')}
-        />
-        <IconButton
-          icon={FaHighlighter}
-          title="Highlight"
-          onClick={() => editor.chain().focus().toggleHighlight().run()}
-          active={editor.isActive('highlight')}
-        />
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                if (!editor) return;
+                const selection = editor.state.selection;
+                if (selection.from === selection.to) {
+                  toast.error("Select text first");
+                  return;
+                }
+                editor.chain().focus().aiRephrase().run();
+              }}
+            >
+              <span className="text-purple-600 font-bold text-sm">AI</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Improve with AI</TooltipContent>
+        </Tooltip>
+
+        <EmojiPicker editor={editor} />
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Headings */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <FaHeading className="h-4 w-4" />
+              {headingLevel}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setHeading('Paragraph')}>
+              Paragraph
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setHeading('Heading 1')}>
+              Heading 1
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setHeading('Heading 2')}>
+              Heading 2
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setHeading('Heading 3')}>
+              Heading 3
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Lists / Block / Code */}
+        <div className="flex items-center gap-1">
+          <IconButton
+            icon={FaListUl}
+            title="Bullet List"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            active={editor.isActive('bulletList')}
+          />
+          <IconButton
+            icon={FaListOl}
+            title="Ordered List"
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            active={editor.isActive('orderedList')}
+          />
+          <IconButton
+            icon={FaQuoteRight}
+            title="Blockquote"
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            active={editor.isActive('blockquote')}
+          />
+          <IconButton
+            icon={FaCode}
+            title="Code Block"
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            active={editor.isActive('codeBlock')}
+          />
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Media & Extras */}
+        <div className="flex items-center gap-1">
+          <IconButton icon={FaLink} title="Add Link" onClick={addLink} />
+          <IconButton icon={FaImage} title="Insert Image" onClick={addImage} />
+          <IconButton
+            icon={FaImage}
+            title="Insert Image"
+            onClick={() => {
+              setImageModalOpen(true);
+              toast('📸 Upload an image or paste a URL!', {
+                icon: '💡',
+                duration: 3000,
+              });
+            }}
+          />
+          <IconButton icon={FaTable} title="Insert Table" onClick={addTable} />
+          <IconButton
+            icon={FaTable}
+            title="Insert Table"
+            onClick={() => {
+              setTableModalOpen(true);
+              toast('📊 Select table size by hovering over the grid!', {
+                icon: '💡',
+                duration: 3000,
+              });
+            }}
+          />
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Alignment */}
+        <div className="flex gap-1">
+          <IconButton
+            icon={FaAlignLeft}
+            title="Align Left"
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            active={editor.isActive({ textAlign: 'left' })}
+          />
+          <IconButton
+            icon={FaAlignCenter}
+            title="Align Center"
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            active={editor.isActive({ textAlign: 'center' })}
+          />
+          <IconButton
+            icon={FaAlignRight}
+            title="Align Right"
+            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            active={editor.isActive({ textAlign: 'right' })}
+          />
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Undo / Redo */}
+        <div className="flex items-center gap-1">
+          <IconButton
+            icon={FaUndo}
+            title="Undo"
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+          />
+          <IconButton
+            icon={FaRedo}
+            title="Redo"
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+          />
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Right Actions */}
+        <div className="flex items-center gap-1">
+          <IconButton
+            icon={FaEraser}
+            title="Clear Formatting"
+            onClick={() =>
+              editor.chain().focus().clearNodes().unsetAllMarks().run()
+            }
+          />
+          <IconButton icon={FaPrint} title="Print" onClick={handlePrint} />
+          <IconButton icon={FaDownload} title="Download HTML" onClick={handleDownload} />
+          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled
+              className="p-2 hover:bg-gray-100 opacity-50 cursor-not-allowed"
+              title="AI Suggestions (Coming Soon)"
+            >
+              <FaRobot className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        </div>
       </div>
 
-      {/* Divider */}
-      <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+      <ImageUploadModal
+        editor={editor}
+        isOpen={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+      />
 
-      <EmojiPicker editor={editor} />
-
-      {/* Divider */}
-      <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Headings */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <FaHeading className="h-4 w-4" />
-            {headingLevel}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => setHeading('Paragraph')}>
-            Paragraph
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setHeading('Heading 1')}>
-            Heading 1
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setHeading('Heading 2')}>
-            Heading 2
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setHeading('Heading 3')}>
-            Heading 3
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Divider */}
-      <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Lists / Block / Code */}
-      <div className="flex items-center gap-1">
-        <IconButton
-          icon={FaListUl}
-          title="Bullet List"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          active={editor.isActive('bulletList')}
-        />
-        <IconButton
-          icon={FaListOl}
-          title="Ordered List"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          active={editor.isActive('orderedList')}
-        />
-        <IconButton
-          icon={FaQuoteRight}
-          title="Blockquote"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          active={editor.isActive('blockquote')}
-        />
-        <IconButton
-          icon={FaCode}
-          title="Code Block"
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          active={editor.isActive('codeBlock')}
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Media & Extras */}
-      <div className="flex items-center gap-1">
-        <IconButton icon={FaLink} title="Add Link" onClick={addLink} />
-        <IconButton icon={FaImage} title="Insert Image" onClick={addImage} />
-        <IconButton icon={FaTable} title="Insert Table" onClick={addTable} />
-      </div>
-
-      {/* Divider */}
-      <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Alignment */}
-      <div className="flex gap-1">
-        <IconButton
-          icon={FaAlignLeft}
-          title="Align Left"
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          active={editor.isActive({ textAlign: 'left' })}
-        />
-        <IconButton
-          icon={FaAlignCenter}
-          title="Align Center"
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          active={editor.isActive({ textAlign: 'center' })}
-        />
-        <IconButton
-          icon={FaAlignRight}
-          title="Align Right"
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          active={editor.isActive({ textAlign: 'right' })}
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Undo / Redo */}
-      <div className="flex items-center gap-1">
-        <IconButton
-          icon={FaUndo}
-          title="Undo"
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-        />
-        <IconButton
-          icon={FaRedo}
-          title="Redo"
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
-      {/* Right Actions */}
-      <div className="flex items-center gap-1">
-        <IconButton
-          icon={FaEraser}
-          title="Clear Formatting"
-          onClick={() =>
-            editor.chain().focus().clearNodes().unsetAllMarks().run()
-          }
-        />
-        <IconButton icon={FaPrint} title="Print" onClick={handlePrint} />
-        <IconButton icon={FaDownload} title="Download HTML" onClick={handleDownload} />
-        <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled
-            className="p-2 hover:bg-gray-100 opacity-50 cursor-not-allowed"
-            title="AI Suggestions (Coming Soon)"
-          >
-            <FaRobot className="h-4 w-4" />
-          </Button>
-        </motion.div>
-      </div>
-    </div>
+      <TableInsertModal
+        editor={editor}
+        isOpen={tableModalOpen}
+        onClose={() => setTableModalOpen(false)}
+      />
+    </>
   );
 }

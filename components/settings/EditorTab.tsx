@@ -98,7 +98,6 @@ export function EditorSettings() {
       <TabsContent value="ui" className="space-y-6">
         <h4 className="text-lg font-semibold">UI Elements</h4>
         <div className="space-y-4">
-          <UIToggle keyName="showHeader" label="Show Document Header" />
           <UIToggle keyName="showStatusBar" label="Show Status Bar" />
           <UIToggle keyName="showInfoBar" label="Show Info Bar" />
           <UIToggle keyName="showFloatingToolbar" label="Floating Toolbar" />

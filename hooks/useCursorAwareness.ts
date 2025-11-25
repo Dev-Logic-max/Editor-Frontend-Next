@@ -1,62 +1,84 @@
 'use client';
 
 import { useEffect } from 'react';
-import { HocuspocusProvider } from '@hocuspocus/provider';
-import { hashString } from '@/utils/hash';
-import '../styles/editor.css';
 
-export function useCursorAwareness(editor: any, userId: string, user: any, provider: HocuspocusProvider | null) {
+import * as Y from 'yjs';
+import { hashString } from '@/utils/hash';
+import { HocuspocusProvider } from '@hocuspocus/provider';
+// import '../styles/editor.css';
+
+export function useCursorAwareness(
+  editor: any,
+  userId: string,
+  user: any,
+  provider: HocuspocusProvider | null,
+  ydoc: Y.Doc | null,
+  yTypeName: string = 'document' // default to 'document' (match your Tiptap Transformer)
+) {
   useEffect(() => {
-    if (!editor || !userId || !provider?.awareness) return;
+    // ✅ Guard: run only when provider, awareness, and editor are ready
+    if (!editor || !userId || !provider?.awareness || !ydoc) return;
 
     const hue = hashString(userId) % 360;
     const color = `hsl(${hue}, 80%, 60%)`;
+    const userName = `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() || 'Unknown';
     const gradient = `linear-gradient(45deg, hsl(${hue}, 80%, 60%), hsl(${(hue + 60) % 360}, 80%, 50%))`;
-    const userName = `${user?.firstName} ${user?.lastName || ''}`.trim() || 'Unknown';
 
-    // Set awareness data
+    // ✅ Ensure Y shared type exists to create relative positions before setting awareness
+    const yType = ydoc.get(yTypeName);
+    if (!yType) console.warn('[useCursorAwareness] yType not found:', yTypeName);
+
+    // Set base awareness state once (data: user meta)
     provider.awareness.setLocalState({
+      user: { name: userName, color },
       userId,
-      name: userName,
       color,
-      avatar: user?.profilePhoto || ``,
+      name: userName,
+      avatar: user?.profilePhoto || '',
       avatarGradient: gradient,
       typing: false,
     });
+    // cursor will be set below when selection exists
 
-    // Update cursor position on selection change
-    const updateCursor = () => {
-      if (!editor.isFocused) return;
-      const { from } = editor.state.selection;
-      provider.awareness!.setLocalStateField('cursor', { from, to: from });
-      console.log('Cursor updated:', { userId, from, name: userName });
-    };
+    console.log(
+      `%c[Awareness] Local user joined:`,
+      'color: #00cc88',
+      { userId, name: userName, color }
+    );
 
-    // 🟢 Track Typing Activity
-    let typingTimeout: any;
+    // ✅ Typing detection (simple debounce)
+    let typingTimeout: any = null;
     const handleTyping = () => {
-      provider.awareness!.setLocalStateField('typing', true);
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        provider.awareness!.setLocalStateField('typing', false);
-      }, 9000);
+      try {
+        provider.awareness?.setLocalStateField('typing', true);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+          provider.awareness?.setLocalStateField('typing', false);
+        }, 3000);
+      } catch (err) {
+        console.warn('[useCursorAwareness] handleTyping error', err);
+      }
     };
 
-    editor.on('selectionUpdate', updateCursor);
-    editor.on('transaction', updateCursor); // Additional trigger for robustness
     editor.on('update', handleTyping);
 
-    // Debug awareness state
-    provider.awareness.on('update', () => {
-      console.log('Awareness state:', Array.from(provider.awareness!.getStates().entries()));
-    });
+    // Debug: log awareness state changes (optional)
+    const awarenessHandler = () => {
+      const states = Array.from(provider.awareness!.getStates().entries());
+      console.groupCollapsed('%c[Awareness] All connected users', 'color:#3399ff');
+      states.forEach(([clientId, state]: any) => {
+        console.log('Client:', clientId, '→', state);
+      });
+      console.groupEnd();
+    };
+    provider.awareness.on('update', awarenessHandler);
 
-    // ✅ Proper cleanup
+    // ✅ Cleanup
     return () => {
-      editor.off('selectionUpdate', updateCursor);
-      editor.off('transaction', updateCursor);
       editor.off('update', handleTyping);
+      provider.awareness!.off('update', awarenessHandler);
+      clearTimeout(typingTimeout);
       provider.awareness!.setLocalState(null);
     };
-  }, [editor, userId, user, provider]);
+  }, [editor, userId, user, provider, ydoc, yTypeName]);
 }

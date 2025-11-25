@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await logout();
       clearAuthData();
-      router.push('/login');
+      router.push('/');
     } finally {
       setLoading(false);
     }

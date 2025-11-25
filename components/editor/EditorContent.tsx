@@ -8,7 +8,7 @@ interface EditorContentProps {
 
 export function EditorContentComponent({ editor }: EditorContentProps) {
   return (
-    <div className="p-4 sm:p-6 lg:p-8 min-h-[500px]">
+    <div className="p-2 sm:px-4 h-fit">
       <EditorContent editor={editor} className="prose prose-lg max-w-none focus:outline-none dark:prose-invert"/>
     </div>
   );

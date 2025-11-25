@@ -204,3 +204,147 @@
   content: ' ';
   display: inline-block;
 }
+
+/* Table Base Styles */
+.tiptap-table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.tiptap-table td,
+.tiptap-table th {
+  border: 2px solid #d1d5db;
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 8px 12px;
+  position: relative;
+  vertical-align: top;
+}
+
+.tiptap-table td > *,
+.tiptap-table th > * {
+  margin-bottom: 0;
+}
+
+.tiptap-table th {
+  background-color: #f3f4f6;
+  border: 2px solid #d1d5db;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Selected cell styling */
+.tiptap-table .selectedCell:after {
+  background-color: rgba(147, 197, 253, 0.3);
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+/* Column resize handle */
+.tiptap-table .column-resize-handle {
+  background-color: #3b82f6;
+  bottom: -2px;
+  pointer-events: none;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+}
+
+/* Hover effects for better UX */
+.tiptap-table td:hover,
+.tiptap-table th:hover {
+  background-color: #f9fafb;
+}
+
+/* Paragraph inside table cells */
+.tiptap-table p:first-child {
+  margin-top: 0;
+}
+
+.tiptap-table p:last-child {
+  margin-bottom: 0;
+}
+
+/* Table wrapper for resizable tables */
+.tableWrapper {
+  overflow-x: auto;
+  padding: 1rem 0;
+}
+
+/* Grip column/row controls (if you add them later) */
+.grip-column,
+.grip-row {
+  background-color: #e5e7eb;
+  cursor: pointer;
+  position: absolute;
+}
+
+.grip-column:hover,
+.grip-row:hover {
+  background-color: #9ca3af;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .tiptap-table {
+    font-size: 0.875rem;
+  }
+  
+  .tiptap-table td,
+  .tiptap-table th {
+    padding: 6px 8px;
+  }
+}
+
+/* ✅ Additional Table Visibility Styles */
+.ProseMirror table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
+  border: 2px solid #d1d5db;
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+  border: 2px solid #d1d5db;
+  box-sizing: border-box;
+  min-width: 3em;
+  padding: 10px 12px;
+  position: relative;
+  vertical-align: top;
+  background-color: white;
+}
+
+.ProseMirror table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 3px solid #9ca3af;
+}
+
+.ProseMirror table tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ProseMirror table td:hover {
+  background-color: #f9fafb;
+}
+
+/* Make empty cells visible */
+.ProseMirror table td:empty::before,
+.ProseMirror table th:empty::before {
+  content: '\00a0';
+  display: inline-block;
+}

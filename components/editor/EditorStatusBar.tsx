@@ -120,15 +120,15 @@ export function EditorStatusBar({ document, saveStatus, connectionStatus, active
     };
 
     return (
-        <div className={`bg-gray-50 px-4 py-1 flex flex-wrap justify-between items-center gap-2 ${layout === EditorLayout.Document ? 'rounded-xl m-2' : 'border-b'}`}>
+        <div className={`bg-gray-50 px-4 py-1 flex flex-wrap justify-between items-center gap-2 ${layout === EditorLayout.Document ? 'rounded-xl m-2 mt-4' : 'border-b'}`}>
             <span className="flex items-center gap-4 order-1">
                 <div className="flex items-center gap-1 text-xs sm:text-sm font-mono">
                     <span className="hidden md:block">Status:</span>
                     <span className={getStatusColor(connectionStatus)}>{connectionStatus}</span>
                 </div>
                 <span className="hidden sm:block text-sm font-mono">Letters: <b>{letterCount}</b></span>
-                <span className="block relative"><PiChatCenteredTextDuotone className="w-6 h-6" />
-                    <span className="absolute text-center text-[10px] font-bold content-center w-5 h-5 rounded-full border -top-2.5 left-3.5 bg-gray-100 border-gray-400">{letterCount}</span>
+                <span className="block sm:hidden relative"><PiChatCenteredTextDuotone className="w-6 h-6" />
+                    <span className="absolute text-center text-[10px] font-bold content-center w-fit px-1 rounded-full border -top-2.5 left-3.5 bg-gray-100 border-gray-400">{letterCount}</span>
                 </span>
                 <span className="hidden sm:block text-sm font-mono">Words: <b>{wordCount}</b></span>
             </span>

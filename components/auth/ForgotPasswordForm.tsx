@@ -15,7 +15,7 @@ const schema = z.object({
 });
 
 export function ForgotPasswordForm() {
-  const { forgotPassword } = useAuth();
+  const { requestPasswordReset } = useAuth();
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: { email: '' },
@@ -23,7 +23,7 @@ export function ForgotPasswordForm() {
 
   const onSubmit = async (data: { email: string }) => {
     try {
-      await forgotPassword(data.email);
+      await requestPasswordReset(data.email);
       toast.success('Password reset link sent (check console for token)');
     } catch (error: any) {
       toast.error(error.message || 'Failed to send reset link');

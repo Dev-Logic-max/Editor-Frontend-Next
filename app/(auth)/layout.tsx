@@ -4,7 +4,7 @@ import { FloatingIcon } from "@/components/animations/FloatingIcon";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex container min-h-screen relative items-center justify-center mx-auto px-4 py-8 bg-linear-to-br from-purple-400/40 via-pink-400/40 to-teal-400/40 animate-gradient">
+    <main className="flex min-h-screen relative items-center justify-center mx-auto px-4 py-8 bg-linear-to-br from-purple-400/40 via-pink-400/40 to-teal-400/40 animate-gradient">
       {/* 🎨 Floating Editor Icons 🖌️ */}
       <div className="absolute inset-0 pointer-events-none">
         <FloatingIcon lib="ri" name="Bold" delay={0} left="6%" top="18%" />
@@ -23,7 +23,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <FloatingIcon lib="fc" name="Like" delay={13} left="48%" top="4%" />
         <FloatingIcon lib="fc" name="Survey" delay={14} left="24%" top="12%" />
       </div>
-      
+
       {children}
     </main>
   );

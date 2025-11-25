@@ -39,7 +39,7 @@ export default function EditorPage() {
     if (user && id) fetchDoc();
   }, [id, user, router]);
 
-  if (loading) return <div className="flex justify-center items-center h-64">Loading...</div>;
+  if (loading) return <div className="flex justify-center items-center">Loading...</div>;
   if (!document) return null;
 
   return (

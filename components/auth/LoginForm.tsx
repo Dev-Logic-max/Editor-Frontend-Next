@@ -32,7 +32,7 @@ export function LoginForm() {
         try {
             await loginUser(data);
             toast.success('Login successful');
-            router.push('/dashboard');
+            router.push('/');
         } catch (error: any) {
             toast.error(error.message || 'Login failed');
         }

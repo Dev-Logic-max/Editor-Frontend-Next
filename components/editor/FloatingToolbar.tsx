@@ -1,27 +1,24 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Editor } from '@tiptap/react';
-import {
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Link as LinkIcon,
-  Code,
-  X,
-  Check,
-} from 'lucide-react';
-import { MotionDiv } from '../common/MotionDiv';
-import { Button } from '../ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Editor } from '@tiptap/react';
+
+import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+
+import { Bold, Italic, Underline, Strikethrough, Link as LinkIcon, Code, X, Check } from 'lucide-react';
+
+import { AIMenu } from '@/components/commands/AIMenu';
+import { MotionDiv } from '@/components/common/MotionDiv';
 
 interface FloatingToolbarProps {
   editor: Editor | null;
+  onAIStart?: (originalText: string, action: string) => void;
+  onAIComplete?: (originalText: string, result: string, action: string) => void;
 }
 
-export function FloatingToolbar({ editor }: FloatingToolbarProps) {
+export function FloatingToolbar({ editor, onAIStart, onAIComplete }: FloatingToolbarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const [showLinkInput, setShowLinkInput] = useState(false);
@@ -90,14 +87,21 @@ export function FloatingToolbar({ editor }: FloatingToolbarProps) {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.15 }}
-          className="absolute z-20 flex gap-1 bg-white border border-gray-200 rounded-xl shadow-md px-2 py-1"
-          style={{
-            top: `${coords.top}px`,
-            left: `${coords.left}px`,
-          }}
+          className="absolute z-20 flex items-center gap-1 bg-white border border-gray-200 rounded-xl shadow-md px-2 py-1"
+          style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
         >
           {!showLinkInput ? (
             <>
+              {/* 🤖 AI Menu */}
+              <AIMenu
+                editor={editor}
+                onAIStart={onAIStart}
+                onAIComplete={onAIComplete}
+                compact
+              />
+
+              <div className="w-px h-6 bg-gray-300 mx-0.5" />
+
               {[
                 { icon: <Bold className="w-4 h-4" />, action: 'toggleBold', name: 'Bold' },
                 { icon: <Italic className="w-4 h-4" />, action: 'toggleItalic', name: 'Italic' },

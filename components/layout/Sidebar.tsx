@@ -22,7 +22,7 @@ export function Sidebar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const navItems = [
-    { name: 'Documents', icon: <FileIcon className="h-6 w-6" />, href: '/dashboard' },
+    { name: 'Documents', icon: <FileIcon className="h-6 w-6" />, href: '/documents' },
     { name: 'Collaborators', icon: <UsersIcon className="h-6 w-6" />, href: '/collaborators' },
     { name: 'Settings', icon: <SettingsIcon className="h-6 w-6" />, href: '/settings' },
   ];
@@ -75,7 +75,7 @@ export function Sidebar() {
   )
 
   const Imports = () => (
-    <div className="">
+    <div className="hidden">
       <div className="group flex items-center justify-between mb-3">
         <h2 className="flex items-center text-lg font-semibold text-slate-800">
           <FolderIcon className='w-7 h-7 mr-2' /> Imports
@@ -113,7 +113,7 @@ export function Sidebar() {
       >
         <>
           <h1 className="flex items-center pb-4 text-lg border-b font-semibold text-slate-800">
-            <LuLayoutDashboard className='w-5 h-5 mr-4' /> Collab Sphere
+            <Link href="/dashboard" className='flex'><LuLayoutDashboard className='w-5 h-5 mr-4' /> Collab Sphere</Link>
           </h1>
           <NavSection />
           <Documents />
@@ -122,7 +122,7 @@ export function Sidebar() {
 
       {/* Desktop Sidebar */}
       <aside
-        className={`bg-white transition-all duration-300 border relative shadow ${isSidebarOpen ? 'w-60 p-4' : 'w-16 my-3 ms-3 rounded-lg p-2'} md:flex flex-col hidden`}
+        className={`bg-white transition-all duration-300 border relative shadow ${isSidebarOpen ? 'w-56 p-4' : 'w-16 my-3 ms-3 rounded-lg p-2'} md:flex flex-col hidden`}
       >
         {/* Buttons for Desktop */}
         <Button
@@ -135,7 +135,7 @@ export function Sidebar() {
         {isSidebarOpen ? (
           <>
             <h1 className="flex items-center pb-4 text-lg border-b font-semibold text-slate-800">
-              <DashboardIcon className='w-6 h-6 mr-2' /> Dashboard
+              <Link href="/dashboard" className='flex'><DashboardIcon className='w-6 h-6 mr-2' /> Collab Sphere</Link>
             </h1>
             <NavSection />
             <Documents />

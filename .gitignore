@@ -10,6 +10,11 @@
 !.yarn/releases
 !.yarn/versions
 
+bin
+components/bin
+
+.npmrc
+
 # testing
 /coverage
 

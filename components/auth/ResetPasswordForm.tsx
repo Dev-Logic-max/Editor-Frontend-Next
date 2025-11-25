@@ -16,7 +16,7 @@ const schema = z.object({
 });
 
 export function ResetPasswordForm() {
-  const { resetPassword } = useAuth();
+  const { resetUserPassword } = useAuth();
   const router = useRouter();
   const form = useForm({
     resolver: zodResolver(schema),
@@ -25,7 +25,7 @@ export function ResetPasswordForm() {
 
   const onSubmit = async (data: { token: string; newPassword: string }) => {
     try {
-      await resetPassword(data.token, data.newPassword);
+      await resetUserPassword(data.token, data.newPassword);
       toast.success('Password reset successful');
       router.push('/login');
     } catch (error: any) {

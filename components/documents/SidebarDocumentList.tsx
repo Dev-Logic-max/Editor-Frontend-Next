@@ -31,7 +31,7 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
   const { settings } = useEditorSettings();
   const { documents, fetchDocuments, deleteDocument } = useDocuments();
 
-  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const [selectedDocId, setSelectedDocId] = useState<string>('');
 
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [appearanceModalOpen, setAppearanceModalOpen] = useState(false);
@@ -51,7 +51,7 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
         await deleteDocument(selectedDocId);
         toast.success('Document deleted successfully');
         setDeleteModalOpen(false);
-        setSelectedDocId(null);
+        setSelectedDocId('');
       } catch (error: any) {
         toast.error(error.message || 'Failed to delete document');
       }
@@ -64,8 +64,9 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
     return (
       <div className="space-y-1.5">
         {documents.map((doc) => {
-          // const isCreator = user?._id === documents.creator._id;
-          // const hasCollaborators = documents?.collaborators?.length > 0;
+          const isCreator = user?._id === doc.creator._id;
+          const hasCollaborators = doc?.collaborators?.length > 0;
+
           return (
             <div
               key={doc._id}
@@ -85,21 +86,21 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
                   </Badge>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-white shadow-lg">
-                  {layout === EditorLayout.Document && (
+                  {isCreator && layout === EditorLayout.Document && (
                     <DropdownMenuItem
                       className="flex items-center gap-2 hover:bg-cream-100"
-                      onClick={() => { }}
+                      onClick={() => {
+                        setSelectedDocId(doc._id);
+                        setInviteModalOpen(true);
+                      }}
                     >
                       <HiOutlineUserGroup className="" />
-                      Collaborators
+                      {hasCollaborators ? 'Collaborators' : 'Add Collaborator'}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
                     className="flex items-center gap-2 hover:bg-cream-100"
-                    onClick={() => {
-                      setSelectedDocId(doc._id);
-                      setInviteModalOpen(true);
-                    }}
+                    onClick={() => { }}
                   >
                     <HiOutlineDocumentDuplicate className="" />
                     Duplicate
@@ -146,10 +147,17 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              {/* {isCreator && <InviteModal documentId={selectedDocId!} collaborators={hasCollaborators} />} */}
             </div>
           )
         })}
+        <InviteModal
+          documentId={selectedDocId}
+          isOpen={inviteModalOpen}
+          onClose={() => {
+            setInviteModalOpen(false);
+            setSelectedDocId('');
+          }}
+        />
         <AppearanceDocumentModal
           isOpen={appearanceModalOpen}
           onClose={() => setAppearanceModalOpen(false)}
@@ -161,7 +169,7 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
         <EditDocumentModal
           isOpen={editModalOpen}
           onClose={() => setEditModalOpen(false)}
-          documentId={selectedDocId}
+          documentId={selectedDocId || null}
         />
         <DeleteDocumentModal
           isOpen={deleteModalOpen}

@@ -36,7 +36,7 @@ export function Header() {
 
   return (
     <header className="bg-white shadow-sm">
-      <div className="container mx-auto px-4 py-2 flex justify-between items-center relative">
+      <div className="mx-auto px-4 py-2 flex justify-between items-center relative">
         {/* Logo */}
         <Link href="/" className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-500 to-purple-500">
           AI Editor

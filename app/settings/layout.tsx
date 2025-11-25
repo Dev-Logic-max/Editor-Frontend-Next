@@ -10,7 +10,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <SettingsProvider>
       <Header />
-      <main className="container mx-auto px-2 md:px-6 py-6">
+      <main className="mx-auto px-2 md:px-6 py-6">
         <MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
