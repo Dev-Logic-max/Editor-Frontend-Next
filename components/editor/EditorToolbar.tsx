@@ -6,30 +6,35 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 import { AIMenu } from '@/components/commands/AIMenu';
+import { LinkModal } from '@/components/services/LinkModal';
 import { EmojiPicker } from '@/components/common/EmojiPicker';
 import { ColorPicker } from '@/components/services/ColorPicker';
+import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
 import { ImageUploadModal } from '@/components/services/ImageUploadModal';
 import { TableInsertModal } from '@/components/services/TableInsertModal';
 
-import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaHighlighter, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload } from 'react-icons/fa';
+import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaHighlighter, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaPhotoVideo } from 'react-icons/fa';
+import { BsBoxSeamFill } from "react-icons/bs";
 
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
 
 interface EditorToolbarProps {
   editor: any;
+  documentId: string;
   onAIStart?: (originalText: string, action: string) => void;
   onAIComplete?: (originalText: string, result: string, action: string) => void;
 }
 
-export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbarProps) {
+export function EditorToolbar({ editor, documentId, onAIStart, onAIComplete }: EditorToolbarProps) {
   const { settings } = useEditorSettings();
   const [headingLevel, setHeadingLevel] = useState('Paragraph');
   const [tableModalOpen, setTableModalOpen] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
 
   const layout = settings.appearance.layout;
 
@@ -116,6 +121,10 @@ export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbar
     toast.success('Table inserted!');
   };
 
+  const openLinkModal = () => {
+    setLinkModalOpen(true);
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -176,27 +185,6 @@ export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbar
           onAIStart={onAIStart}
           onAIComplete={onAIComplete}
         />
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                if (!editor) return;
-                const selection = editor.state.selection;
-                if (selection.from === selection.to) {
-                  toast.error("Select text first");
-                  return;
-                }
-                editor.chain().focus().aiRephrase().run();
-              }}
-            >
-              <span className="text-purple-600 font-bold text-sm">AI</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Improve with AI</TooltipContent>
-        </Tooltip>
 
         <EmojiPicker editor={editor} />
 
@@ -263,8 +251,11 @@ export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbar
 
         {/* Media & Extras */}
         <div className="flex items-center gap-1">
-          <IconButton icon={FaLink} title="Add Link" onClick={addLink} />
-          <IconButton icon={FaImage} title="Insert Image" onClick={addImage} />
+          <IconButton
+            icon={FaLink}
+            title="Add Link"
+            onClick={openLinkModal}
+          />
           <IconButton
             icon={FaImage}
             title="Insert Image"
@@ -276,7 +267,6 @@ export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbar
               });
             }}
           />
-          <IconButton icon={FaTable} title="Insert Table" onClick={addTable} />
           <IconButton
             icon={FaTable}
             title="Insert Table"
@@ -285,6 +275,18 @@ export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbar
               toast('📊 Select table size by hovering over the grid!', {
                 icon: '💡',
                 duration: 3000,
+              });
+            }}
+          />
+
+          <IconButton
+            icon={BsBoxSeamFill}
+            title="Media Library"
+            onClick={() => {
+              setMediaLibraryOpen(true);
+              toast('📚 Manage your media library', {
+                icon: '💡',
+                duration: 2000,
               });
             }}
           />
@@ -348,19 +350,14 @@ export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbar
           />
           <IconButton icon={FaPrint} title="Print" onClick={handlePrint} />
           <IconButton icon={FaDownload} title="Download HTML" onClick={handleDownload} />
-          <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled
-              className="p-2 hover:bg-gray-100 opacity-50 cursor-not-allowed"
-              title="AI Suggestions (Coming Soon)"
-            >
-              <FaRobot className="h-4 w-4" />
-            </Button>
-          </motion.div>
         </div>
       </div>
+
+      <LinkModal
+        editor={editor}
+        isOpen={linkModalOpen}
+        onClose={() => setLinkModalOpen(false)}
+      />
 
       <ImageUploadModal
         editor={editor}
@@ -372,6 +369,13 @@ export function EditorToolbar({ editor, onAIStart, onAIComplete }: EditorToolbar
         editor={editor}
         isOpen={tableModalOpen}
         onClose={() => setTableModalOpen(false)}
+      />
+
+      <MediaLibraryModal
+        isOpen={mediaLibraryOpen}
+        onClose={() => setMediaLibraryOpen(false)}
+        documentId={documentId}
+        editor={editor}
       />
     </>
   );

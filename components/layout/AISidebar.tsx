@@ -54,6 +54,220 @@ export function AIComparisonSidebar({
   // Expand states per item
   const [expandedIndex, setExpandedIndex] = useState<{ [key: number]: { original: boolean; improved: boolean } }>({});
 
+  // Add to component state
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [imageLoading, setImageLoading] = useState(false);
+  const [includeDocumentForImage, setIncludeDocumentForImage] = useState(false);
+
+  const [imageModel, setImageModel] = useState('flux');
+  const [generatedImages, setGeneratedImages] = useState<Array<{
+    url: string;
+    prompt: string;
+    model: string;
+    timestamp: Date;
+  }>>([]);
+
+  const availableImageModelsV0 = [
+    { id: 'flux', name: 'Flux', description: 'High quality, balanced', provider: 'Pollinations' },
+    { id: 'flux-realism', name: 'Flux Realism', description: 'Photorealistic images', provider: 'Pollinations' },
+    { id: 'flux-anime', name: 'Flux Anime', description: 'Anime style art', provider: 'Pollinations' },
+    { id: 'turbo', name: 'Turbo', description: 'Fast generation', provider: 'Pollinations' },
+  ];
+
+  // Update available image models with ALL options
+  const availableImageModels = [
+    // Pollinations.ai - FREE
+    {
+      id: 'pollinations-flux',
+      name: 'Pollinations Flux',
+      description: 'FREE - High quality, no API key',
+      provider: 'Pollinations',
+      api: 'pollinations',
+      cost: 'Free'
+    },
+    {
+      id: 'pollinations-flux-realism',
+      name: 'Pollinations Flux Realism',
+      description: 'FREE - Photorealistic',
+      provider: 'Pollinations',
+      api: 'pollinations',
+      cost: 'Free'
+    },
+    {
+      id: 'pollinations-flux-anime',
+      name: 'Pollinations Flux Anime',
+      description: 'FREE - Anime style',
+      provider: 'Pollinations',
+      api: 'pollinations',
+      cost: 'Free'
+    },
+    {
+      id: 'pollinations-turbo',
+      name: 'Pollinations Turbo',
+      description: 'FREE - Fast generation',
+      provider: 'Pollinations',
+      api: 'pollinations',
+      cost: 'Free'
+    },
+
+    // Hugging Face - FREE with queue
+    {
+      id: 'hf-sdxl',
+      name: 'Stable Diffusion XL',
+      description: 'FREE - Queue-based',
+      provider: 'Hugging Face',
+      api: 'huggingface',
+      cost: 'Free (slower)'
+    },
+    {
+      id: 'hf-flux-schnell',
+      name: 'FLUX.1 Schnell',
+      description: 'FREE - Fast, good quality',
+      provider: 'Hugging Face',
+      api: 'huggingface',
+      cost: 'Free (slower)'
+    },
+
+    // Replicate - Paid but best quality
+    {
+      id: 'replicate-flux-pro',
+      name: 'FLUX.1 Pro',
+      description: 'Best quality available',
+      provider: 'Replicate',
+      api: 'replicate',
+      cost: '$0.05/img (50 free)'
+    },
+    {
+      id: 'replicate-flux-dev',
+      name: 'FLUX.1 Dev',
+      description: 'High quality, faster',
+      provider: 'Replicate',
+      api: 'replicate',
+      cost: '$0.003/img'
+    },
+  ];
+
+  const handleImageGenerateV0 = async () => {
+    if (!imagePrompt.trim()) return;
+
+    setImageLoading(true);
+    try {
+      // Using Pollinations.ai (FREE, no API key needed)
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=512&height=512&nologo=true`;
+
+      // setGeneratedImages(prev => [...prev, { url: imageUrl, prompt: imagePrompt }]);
+      setImagePrompt('');
+      toast.success('✨ Image generated!');
+    } catch (error) {
+      toast.error('Failed to generate image');
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  const insertImageIntoEditorV0 = (imageUrl: string) => {
+    if (!editor) return;
+    editor.chain().focus().setImage({ src: imageUrl }).run();
+    toast.success('Image inserted into document');
+    onClose(); // Close sidebar after inserting
+  };
+
+  const downloadImageV0 = async (url: string, prompt: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${prompt.slice(0, 30)}.png`;
+      link.click();
+      toast.success('Image downloaded');
+    } catch {
+      toast.error('Failed to download');
+    }
+  };
+
+  const handleImageGenerateV1 = async () => {
+    if (!imagePrompt.trim()) {
+      toast.error('Please enter a prompt');
+      return;
+    }
+
+    setImageLoading(true);
+
+    try {
+      // Enhanced prompt with document context if enabled
+      let finalPrompt = imagePrompt;
+      if (includeDocumentForImage && documentContent) {
+        finalPrompt = `Based on this context: ${documentContent.slice(0, 500)}...\n\nGenerate: ${imagePrompt}`;
+      }
+
+      console.log('🎨 Generating image with:', {
+        prompt: finalPrompt,
+        model: imageModel,
+        includeDocument: includeDocumentForImage
+      });
+
+      // Pollinations.ai API - FREE, no API key needed
+      const encodedPrompt = encodeURIComponent(finalPrompt);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=${imageModel}&nologo=true&enhance=true`;
+
+      console.log('📡 API URL:', imageUrl);
+
+      // Verify image loads
+      const img = new Image();
+      img.onload = () => {
+        console.log('✅ Image loaded successfully');
+        setGeneratedImages(prev => [{
+          url: imageUrl,
+          prompt: imagePrompt,
+          model: imageModel,
+          timestamp: new Date()
+        }, ...prev]);
+        setImagePrompt('');
+        toast.success('✨ Image generated!');
+      };
+
+      img.onerror = () => {
+        console.error('❌ Failed to load image');
+        toast.error('Failed to generate image. Try a different prompt.');
+      };
+
+      img.src = imageUrl;
+
+    } catch (error: any) {
+      console.error('💥 Image generation error:', error);
+      toast.error('Failed to generate image');
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  const insertImageIntoEditor = (imageUrl: string) => {
+    if (!editor) return;
+    editor.chain().focus().setImage({ src: imageUrl }).run();
+    toast.success('📷 Image inserted!');
+  };
+
+  const downloadImage = async (url: string, prompt: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${prompt.slice(0, 30).replace(/[^a-z0-9]/gi, '_')}.png`;
+      link.click();
+      toast('⬇️ Image Downloaded!');
+    } catch {
+      toast.error('Failed to download');
+    }
+  };
+
+  const regenerateImage = (prompt: string, model: string) => {
+    setImagePrompt(prompt);
+    setImageModel(model);
+    handleImageGenerate();
+  };
+
   console.log("History Initial", history)
 
   useEffect(() => {
@@ -136,6 +350,76 @@ export function AIComparisonSidebar({
       toast.error(error.message || 'Failed to process chat');
     } finally {
       setChatLoading(false);
+    }
+  };
+
+  const handleImageGenerate = async () => {
+    if (!imagePrompt.trim()) {
+      toast.error('Please enter a prompt');
+      return;
+    }
+
+    setImageLoading(true);
+
+    try {
+      // Enhanced prompt with document context if enabled
+      let finalPrompt = imagePrompt;
+      if (includeDocumentForImage && documentContent) {
+        finalPrompt = `Based on this context: ${documentContent.slice(0, 500)}...\n\nGenerate: ${imagePrompt}`;
+      }
+
+      console.log('🎨 [Frontend] Starting image generation');
+      console.log('📝 [Frontend] Prompt:', finalPrompt);
+      console.log('🤖 [Frontend] Model:', imageModel);
+
+      // Call our API route
+      const response = await fetch('/api/ai/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: finalPrompt,
+          model: imageModel,
+          width: 1024,  // HD quality
+          height: 1024,
+          enhance: true  // Enable AI enhancement for better quality
+        }),
+      });
+
+      console.log('📡 [Frontend] API Response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ [Frontend] API Error:', errorData);
+        throw new Error(errorData.error || 'Failed to generate image');
+      }
+
+      const data = await response.json();
+      console.log('✅ [Frontend] API Response:', data);
+
+      if (!data.imageUrl) {
+        throw new Error('No image URL received');
+      }
+
+      // Add to gallery
+      setGeneratedImages(prev => [{
+        url: data.imageUrl,
+        prompt: imagePrompt,
+        model: imageModel,
+        timestamp: new Date()
+      }, ...prev]);
+
+      setImagePrompt('');
+      toast.success('✨ Image generated successfully!');
+
+      console.log('🎉 [Frontend] Image added to gallery');
+
+    } catch (error: any) {
+      console.error('💥 [Frontend] Error:', error);
+      toast.error(error.message || 'Failed to generate image');
+    } finally {
+      setImageLoading(false);
     }
   };
 
@@ -350,52 +634,113 @@ export function AIComparisonSidebar({
 
             {/* Chat Tab */}
             <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden">
+              {/* Chat Header with Clear Button */}
+              <div className="px-4 py-2 border-b bg-gray-50 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <PiRobot className="h-4 w-4 text-purple-600" />
+                  <span className="text-xs font-semibold text-gray-700">Chat Assistant</span>
+                  <Badge variant="outline" className="text-xs">
+                    {chatMessages.length} messages
+                  </Badge>
+                </div>
+                {chatMessages.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setChatMessages([]);
+                      toast.success('Chat cleared');
+                    }}
+                    className="h-7 px-2 text-xs"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+
+              {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {chatMessages.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     <PiRobot className="h-16 w-16 mx-auto mb-3 opacity-50" />
                     <p className="text-sm font-medium">Start a conversation</p>
                     <p className="text-xs mt-1">Ask anything about your document</p>
+
+                    {/* Suggested Prompts */}
+                    <div className="mt-6 space-y-2">
+                      <p className="text-xs font-semibold text-gray-600 mb-2">Try asking:</p>
+                      {['Summarize this document', 'What are the key points?', 'Explain this in simple terms'].map((suggestion, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setChatPrompt(suggestion)}
+                          className="block w-full text-left px-3 py-2 text-xs bg-white border rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                        >
+                          💡 {suggestion}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   chatMessages.map((msg, idx) => (
-                    <div
+                    <motion.div
                       key={idx}
-                      className={`p-3 rounded-lg ${msg.role === 'user'
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className={`group relative p-3 rounded-lg ${msg.role === 'user'
                         ? 'bg-blue-50 border border-blue-200 ml-8'
                         : 'bg-purple-50 border border-purple-200 mr-8'
                         }`}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        {msg.role === 'ai' && <PiSparkle className="h-3 w-3 text-purple-600" />}
-                        <span className="text-xs font-semibold">
-                          {msg.role === 'user' ? 'You' : 'AI Assistant'}
-                        </span>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          {msg.role === 'ai' && <PiSparkle className="h-3 w-3 text-purple-600" />}
+                          <span className="text-xs font-semibold">
+                            {msg.role === 'user' ? 'You' : 'AI Assistant'}
+                          </span>
+                        </div>
+                        {/* Copy button */}
+                        <button
+                          onClick={() => copyText(msg.content)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/50"
+                        >
+                          <LuCopy className="h-3 w-3" />
+                        </button>
                       </div>
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{msg.content}</p>
-                    </div>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                        {msg.content}
+                      </p>
+                      <span className="text-[10px] text-gray-400 mt-1 block">
+                        {new Date().toLocaleTimeString()}
+                      </span>
+                    </motion.div>
                   ))
                 )}
               </div>
 
               {/* Chat Input */}
-              <div className="p-4 border-t bg-gray-50 space-y-3 shrink-0">
-                <div className='flex items-center justify-between'>
+              <div className="p-4 border-t bg-linear-to-br from-gray-50 to-white space-y-3 shrink-0">
+                {/* Model & Context Row */}
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={includeDocument}
                       onCheckedChange={setIncludeDocument}
                       id="include-doc"
                     />
-                    <label htmlFor="include-doc" className="text-xs text-gray-600 flex items-center gap-1">
+                    <label htmlFor="include-doc" className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer">
                       <FileText className="h-3 w-3" />
-                      Include document context
+                      Include document {includeDocument && `(${documentContent.length} chars)`}
                     </label>
                   </div>
-                  <div className="text-xs px-2 py-1 rounded-md font-semibold text-gray-600 bg-gray-200">
-                    {chatModel}
+                  <div className="flex items-center gap-1 text-xs px-2 py-1 rounded-md font-semibold text-purple-700 bg-purple-100 border border-purple-200">
+                    <Sparkles className="h-3 w-3" />
+                    {chatModel.split('-')[0]}
                   </div>
                 </div>
+
+                {/* Input Area */}
                 <div className="flex gap-2">
                   <Textarea
                     value={chatPrompt}
@@ -406,14 +751,17 @@ export function AIComparisonSidebar({
                         handleChatSubmit();
                       }
                     }}
-                    placeholder="Ask anything about your document..."
+                    placeholder={includeDocument
+                      ? "Ask about your document..."
+                      : "Type your message..."
+                    }
                     className="flex-1 resize-none h-20 text-sm"
                     disabled={chatLoading}
                   />
                   <Button
                     onClick={handleChatSubmit}
                     disabled={chatLoading || !chatPrompt.trim()}
-                    className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 self-end"
                   >
                     {chatLoading ? (
                       <Sparkles className="h-4 w-4 animate-spin" />
@@ -422,74 +770,552 @@ export function AIComparisonSidebar({
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500">
-                  Press <kbd className="px-1 py-0.5 bg-gray-200 rounded">Shift+Enter</kbd> for new line
-                </p>
+
+                {/* Help Text */}
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>
+                    <kbd className="px-1.5 py-0.5 bg-gray-200 rounded font-mono">⏎</kbd> Send •
+                    <kbd className="px-1.5 py-0.5 bg-gray-200 rounded font-mono ml-1">Shift+⏎</kbd> New line
+                  </span>
+                  {chatLoading && (
+                    <span className="text-purple-600 animate-pulse">Thinking...</span>
+                  )}
+                </div>
               </div>
             </TabsContent>
 
             {/* Images Tab */}
-            <TabsContent value="images" className="flex-1 p-4 overflow-y-auto">
+            {/* <TabsContent value="images" className="flex-1 p-4 overflow-y-auto">
               <div className="text-center py-8 text-gray-400">
                 <ImageIcon className="h-16 w-16 mx-auto mb-3 opacity-50" />
                 <p className="text-sm font-medium">Image Generation</p>
                 <p className="text-xs mt-1">Coming soon! Generate images with AI</p>
+              </div>
+            </TabsContent> */}
+
+            {/* Images Tab */}
+            <TabsContent value="img" className="flex-1 flex flex-col overflow-hidden">
+              {/* Gallery Area */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {generatedImages.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <ImageIcon className="h-16 w-16 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm font-medium">No images generated yet</p>
+                    <p className="text-xs mt-1 mb-4">Create AI images and insert them into your document</p>
+
+                    {/* Example Prompts */}
+                    <div className="text-left max-w-sm mx-auto space-y-2">
+                      <p className="text-xs font-semibold text-gray-600 mb-2">Try these prompts:</p>
+                      {[
+                        'A futuristic office workspace',
+                        'Abstract geometric pattern',
+                        'Minimalist logo design'
+                      ].map((example, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setImagePrompt(example)}
+                          className="block w-full text-left px-3 py-2 text-xs bg-white border rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                        >
+                          💡 {example}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {generatedImages.map((img, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        {/* Image */}
+                        <div className="relative group">
+                          <img
+                            src={img.url}
+                            alt={img.prompt}
+                            className="w-full aspect-square object-cover"
+                            onError={(e) => {
+                              console.error('Image failed to load:', img.url);
+                              e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23ddd" width="400" height="400"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage failed to load%3C/text%3E%3C/svg%3E';
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+
+                        {/* Image Info */}
+                        <div className="p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="text-xs">
+                              🤖 {img.model}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {new Date(img.timestamp).toLocaleTimeString()}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-gray-700 line-clamp-2">
+                            {img.prompt}
+                          </p>
+
+                          {/* Action Buttons */}
+                          <div className="grid grid-cols-3 gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              onClick={() => insertImageIntoEditor(img.url)}
+                              className="text-xs h-8 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                            >
+                              📝 Insert
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => downloadImage(img.url, img.prompt)}
+                              className="text-xs h-8"
+                            >
+                              ⬇️ Download
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => regenerateImage(img.prompt, img.model)}
+                              className="text-xs h-8"
+                            >
+                              🔄 Regenerate
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+
+                    {/* Clear All Button */}
+                    {generatedImages.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setGeneratedImages([]);
+                          toast.success('Gallery cleared');
+                        }}
+                        className="w-full text-xs"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Clear All Images
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Image Generation Input - Bottom */}
+              <div className="p-4 border-t bg-linear-to-br from-gray-50 to-white space-y-3 shrink-0">
+                {/* Model & Context Row */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={includeDocumentForImage}
+                      onCheckedChange={setIncludeDocumentForImage}
+                      id="include-doc-image"
+                    />
+                    <label htmlFor="include-doc-image" className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer">
+                      <FileText className="h-3 w-3" />
+                      Context {includeDocumentForImage && `(${documentContent.length} chars)`}
+                    </label>
+                  </div>
+
+                  {/* Model Selector */}
+                  <select
+                    value={imageModel}
+                    onChange={(e) => setImageModel(e.target.value)}
+                    className="text-xs px-2 py-1 rounded-md font-semibold border bg-white"
+                  >
+                    {availableImageModels.map(model => (
+                      <option key={model.id} value={model.id}>
+                        {model.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Prompt Input */}
+                <Textarea
+                  value={imagePrompt}
+                  onChange={(e) => setImagePrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                      e.preventDefault();
+                      handleImageGenerate();
+                    }
+                  }}
+                  placeholder={includeDocumentForImage
+                    ? "Describe image based on your document..."
+                    : "Describe the image you want to generate..."
+                  }
+                  className="resize-none h-20 text-sm"
+                  disabled={imageLoading}
+                />
+
+                {/* Generate Button */}
+                {/* <Button
+                  onClick={handleImageGenerate}
+                  disabled={imageLoading || !imagePrompt.trim()}
+                  className="w-full bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
+                >
+                  {imageLoading ? (
+                    <>
+                      <Sparkles className="h-4 w-4 animate-spin mr-2" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Generate Image
+                    </>
+                  )}
+                </Button> */}
+
+                {/* Generate Button */}
+                <Button
+                  onClick={handleImageGenerate}
+                  disabled={imageLoading || !imagePrompt.trim()}
+                  className="w-full bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {imageLoading ? (
+                    <>
+                      <Sparkles className="h-4 w-4 animate-spin mr-2" />
+                      Generating... Please wait
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Generate HD Image
+                    </>
+                  )}
+                </Button>
+
+                {/* Help Text */}
+                <p className="text-xs text-gray-500 text-center">
+                  <kbd className="px-1.5 py-0.5 bg-gray-200 rounded font-mono">Ctrl+Enter</kbd> to generate
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="images" className="flex-1 flex flex-col overflow-hidden">
+              {/* Gallery Area */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {imageLoading && generatedImages.length === 0 && (
+                  <div className="space-y-4">
+                    <div className="border rounded-lg overflow-hidden bg-white shadow-sm animate-pulse">
+                      <div className="aspect-square bg-linear-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                        <div className="text-center">
+                          <Sparkles className="h-12 w-12 mx-auto mb-3 text-purple-400 animate-spin" />
+                          <p className="text-sm font-medium text-purple-600">Generating your image...</p>
+                          <p className="text-xs text-gray-500 mt-1">This may take a few seconds</p>
+                        </div>
+                      </div>
+                      <div className="p-3 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!imageLoading && generatedImages.length === 0 && (
+                  <div className="text-center py-12 text-gray-400">
+                    <ImageIcon className="h-16 w-16 mx-auto mb-3 opacity-40" />
+                    <p className="text-sm font-medium">No images generated yet</p>
+                    <p className="text-xs mt-1 mb-4">Create AI images and insert them into your document</p>
+
+                    {/* Example Prompts */}
+                    <div className="text-left max-w-sm mx-auto space-y-2">
+                      <p className="text-xs font-semibold text-gray-600 mb-2">Try these prompts:</p>
+                      {[
+                        'A futuristic office workspace with holographic displays',
+                        'Abstract geometric pattern in vibrant colors',
+                        'Minimalist logo design for tech company'
+                      ].map((example, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setImagePrompt(example)}
+                          className="block w-full text-left px-3 py-2 text-xs bg-white border rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                        >
+                          💡 {example}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {generatedImages.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <ImageIcon className="h-16 w-16 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm font-medium">No images generated yet</p>
+                    <p className="text-xs mt-1 mb-4">Create AI images and insert them into your document</p>
+
+                    {/* Example Prompts */}
+                    <div className="text-left max-w-sm mx-auto space-y-2">
+                      <p className="text-xs font-semibold text-gray-600 mb-2">Try these prompts:</p>
+                      {[
+                        'A futuristic office workspace',
+                        'Abstract geometric pattern',
+                        'Minimalist logo design'
+                      ].map((example, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setImagePrompt(example)}
+                          className="block w-full text-left px-3 py-2 text-xs bg-white border rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                        >
+                          💡 {example}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {generatedImages.map((img, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        {/* Image */}
+                        <div className="relative group">
+                          <img
+                            src={img.url}
+                            alt={img.prompt}
+                            className="w-full aspect-square object-cover"
+                            onError={(e) => {
+                              console.error('Image failed to load:', img.url);
+                              e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23ddd" width="400" height="400"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage failed to load%3C/text%3E%3C/svg%3E';
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+
+                        {/* Image Info */}
+                        <div className="p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="text-xs">
+                              🤖 {img.model}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {new Date(img.timestamp).toLocaleTimeString()}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-gray-700 line-clamp-2">
+                            {img.prompt}
+                          </p>
+
+                          {/* Action Buttons */}
+                          <div className="grid grid-cols-3 gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              onClick={() => insertImageIntoEditor(img.url)}
+                              className="text-xs h-8 bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                            >
+                              📝 Insert
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => downloadImage(img.url, img.prompt)}
+                              className="text-xs h-8"
+                            >
+                              ⬇️ Download
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => regenerateImage(img.prompt, img.model)}
+                              className="text-xs h-8"
+                            >
+                              🔄 Regenerate
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+
+                    {/* Clear All Button */}
+                    {generatedImages.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setGeneratedImages([]);
+                          toast.success('Gallery cleared');
+                        }}
+                        className="w-full text-xs"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Clear All Images
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Image Generation Input - Bottom */}
+              <div className="p-4 border-t bg-linear-to-br from-gray-50 to-white space-y-3 shrink-0">
+                {/* Model & Context Row */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={includeDocumentForImage}
+                      onCheckedChange={setIncludeDocumentForImage}
+                      id="include-doc-image"
+                    />
+                    <label htmlFor="include-doc-image" className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer">
+                      <FileText className="h-3 w-3" />
+                      Context {includeDocumentForImage && `(${documentContent.length} chars)`}
+                    </label>
+                  </div>
+
+                  {/* Model Selector */}
+                  <select
+                    value={imageModel}
+                    onChange={(e) => setImageModel(e.target.value)}
+                    className="text-xs px-2 py-1 rounded-md font-semibold border bg-white"
+                  >
+                    {availableImageModels.map(model => (
+                      <option key={model.id} value={model.id}>
+                        {model.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Prompt Input */}
+                <Textarea
+                  value={imagePrompt}
+                  onChange={(e) => setImagePrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                      e.preventDefault();
+                      handleImageGenerate();
+                    }
+                  }}
+                  placeholder={includeDocumentForImage
+                    ? "Describe image based on your document..."
+                    : "Describe the image you want to generate..."
+                  }
+                  className="resize-none h-20 text-sm"
+                  disabled={imageLoading}
+                />
+
+                {/* Generate Button */}
+                <Button
+                  onClick={handleImageGenerate}
+                  disabled={imageLoading || !imagePrompt.trim()}
+                  className="w-full bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {imageLoading ? (
+                    <>
+                      <Sparkles className="h-4 w-4 animate-spin mr-2" />
+                      Generating... Please wait
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Generate HD Image
+                    </>
+                  )}
+                </Button>
+
+                {/* Help Text */}
+                <p className="text-xs text-gray-500 text-center">
+                  <kbd className="px-1.5 py-0.5 bg-gray-200 rounded font-mono">Ctrl+Enter</kbd> to generate
+                </p>
               </div>
             </TabsContent>
 
             {/* Settings Tab */}
             <TabsContent value="settings" className="flex-1 overflow-y-auto p-4 space-y-4">
               <div>
-                <h4 className="text-sm font-semibold mb-3">AI Model Settings</h4>
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  AI Model Settings
+                </h4>
 
-                {/* Toolbar Model */}
-                <div className="space-y-2 mb-4">
-                  <label className="text-xs font-medium text-gray-600">
-                    Toolbar AI Model
-                  </label>
-                  <select
-                    value={toolbarModel}
-                    onChange={(e) => setToolbarModel(e.target.value)}
-                    className="w-full p-2 text-sm border rounded-lg bg-white"
-                  >
-                    {availableModels.map(model => (
-                      <option key={model.id} value={model.id}>
-                        {model.name} - {model.description}
-                      </option>
-                    ))}
-                  </select>
+                {/* Text Models Section */}
+                <div className="mb-6">
+                  <h5 className="text-xs font-semibold text-gray-600 mb-3 flex items-center gap-1">
+                    <MessageSquare className="h-3 w-3" />
+                    Text Generation Models
+                  </h5>
+
+                  {/* Toolbar Model */}
+                  <div className="space-y-2 mb-3">
+                    <label className="text-xs font-medium text-gray-600">Toolbar AI Model</label>
+                    <select
+                      value={toolbarModel}
+                      onChange={(e) => setToolbarModel(e.target.value)}
+                      className="w-full p-2 text-sm border rounded-lg bg-white"
+                    >
+                      {availableModels.map(model => (
+                        <option key={model.id} value={model.id}>
+                          {model.name} - {model.description}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Chat Model */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-600">Chat AI Model</label>
+                    <select
+                      value={chatModel}
+                      onChange={(e) => setChatModel(e.target.value)}
+                      className="w-full p-2 text-sm border rounded-lg bg-white"
+                    >
+                      {availableModels.map(model => (
+                        <option key={model.id} value={model.id}>
+                          {model.name} - {model.description}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                {/* Chat Model */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-600">
-                    Chat AI Model
-                  </label>
-                  <select
-                    value={chatModel}
-                    onChange={(e) => setChatModel(e.target.value)}
-                    className="w-full p-2 text-sm border rounded-lg bg-white"
-                  >
-                    {availableModels.map(model => (
-                      <option key={model.id} value={model.id}>
-                        {model.name} - {model.description}
-                      </option>
-                    ))}
-                  </select>
+                {/* Image Models Section */}
+                <div className="mb-6">
+                  <h5 className="text-xs font-semibold text-gray-600 mb-3 flex items-center gap-1">
+                    <ImageIcon className="h-3 w-3" />
+                    Image Generation Models
+                  </h5>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-600">Image Model</label>
+                    <select
+                      value={imageModel}
+                      onChange={(e) => setImageModel(e.target.value)}
+                      className="w-full p-2 text-sm border rounded-lg bg-white"
+                    >
+                      {availableImageModels.map(model => (
+                        <option key={model.id} value={model.id}>
+                          {model.name} - {model.description}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              {/* Available Models */}
+              {/* Available Text Models */}
               <div>
-                <h4 className="text-sm font-semibold mb-3">Available Models</h4>
+                <h4 className="text-sm font-semibold mb-3">Available Text Models</h4>
                 <div className="space-y-2">
                   {availableModels.map(model => (
                     <div key={model.id} className="p-3 bg-gray-50 rounded-lg border space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">{model.name}</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {model.provider}
-                        </Badge>
+                        <Badge variant="secondary" className="text-xs">{model.provider}</Badge>
                       </div>
                       <p className="text-xs text-gray-600">{model.description}</p>
                       <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -501,11 +1327,26 @@ export function AIComparisonSidebar({
                 </div>
               </div>
 
+              {/* Available Image Models */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Available Image Models</h4>
+                <div className="space-y-2">
+                  {availableImageModels.map(model => (
+                    <div key={model.id} className="p-3 bg-linear-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{model.name}</span>
+                        <Badge variant="secondary" className="text-xs">{model.provider}</Badge>
+                      </div>
+                      <p className="text-xs text-gray-600">{model.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Usage Info */}
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-xs text-blue-800">
-                  <strong>Note:</strong> All models are free tier with daily limits.
-                  Models automatically refresh every 24 hours.
+                  <strong>🎉 All Free!</strong> Text models have daily limits. Image generation via Pollinations.ai is completely free with no API key required.
                 </p>
               </div>
             </TabsContent>

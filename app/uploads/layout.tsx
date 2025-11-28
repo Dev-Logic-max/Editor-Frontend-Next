@@ -5,7 +5,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MotionDiv } from '@/components/common/MotionDiv';
 
-export default function DocumentLayout({ children }: { children: React.ReactNode }) {
+export default function UploadLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />

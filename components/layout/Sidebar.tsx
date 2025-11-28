@@ -75,7 +75,7 @@ export function Sidebar() {
   )
 
   const Imports = () => (
-    <div className="hidden">
+    <div className="">
       <div className="group flex items-center justify-between mb-3">
         <h2 className="flex items-center text-lg font-semibold text-slate-800">
           <FolderIcon className='w-7 h-7 mr-2' /> Imports

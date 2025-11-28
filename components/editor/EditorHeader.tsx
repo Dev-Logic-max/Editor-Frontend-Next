@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { AIComparisonSidebar } from '@/components/layout/AISidebar';
-import { InviteModal } from '@/components/modal/InviteCollaboratorModal';
+import { InviteModal } from '@/components/links/InviteCollaboratorModal';
 
 import { TbLayoutSidebarLeftCollapse } from "react-icons/tb";
 
@@ -83,7 +83,7 @@ export function EditorHeader({ editor, title, onTitleChange, document, activeUse
           <div className='p-1 me-2 rounded-md cursor-pointer hover:bg-gray-100' onClick={() => setSidebarOpen(true)}>
             <TbLayoutSidebarLeftCollapse className='w-6 h-6'/>
           </div>
-          <AIComparisonSidebar editor={editor} history={aiHistory} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}/>
+          <AIComparisonSidebar editor={editor} history={aiHistory} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} documentContent={editor?.getText() || ''}/>
           <div className="flex -space-x-2">
             {hasCollaborators && (
               <>

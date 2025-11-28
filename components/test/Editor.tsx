@@ -278,9 +278,9 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       Underline,
       CustomParagraph,
       Highlight.configure({ multicolor: true }),
-      Image.configure({ inline: false, allowBase64: true }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
       CharacterCount.configure({ limit: 100000 }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Image.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: 'tiptap-image' } }),
       Table.configure({
         resizable: true,
         HTMLAttributes: {
@@ -356,6 +356,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         console.log('🔁 [Content] Applied initial server content to editor (once)');
       }
     } catch (err) {
+      toast.error('Failed to load document content');
       console.warn('⚠️[Content] Initial sync error:', err);
     }
   }, [editor, providerReady, docData.content]);
@@ -481,7 +482,12 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
   const showFloating = settings.ui.showFloatingToolbar;
   const ToolbarComponent = showFloating ? FloatingToolbar : EditorToolbar;
 
-  const documentContent = editor ? editor.getText() : '';
+  const documentContentV0 = editor ? editor.getText() : '';
+
+  const documentContent = useMemo(() => {
+    if (!editor) return '';
+    return editor.state.doc.textContent || editor.getText() || '';
+  }, [editor?.state.doc]);
 
   if (!user) return <div>Loading user...</div>;
   if (!editor) return <div>Loading editor...</div>;
@@ -525,11 +531,12 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
 
       <ToolbarComponent
         editor={editor}
+        documentId={docData._id}
         onAIStart={handleAIStart}
         onAIComplete={handleAIComplete}
       />
 
-      {settings.ui.showFloatingToolbar && <FloatingToolbar editor={editor} />}
+      {settings.ui.showFloatingToolbar && <FloatingToolbar editor={editor} documentId={docData._id}/>}
 
       <SlashCommandMenu editor={editor} />
 

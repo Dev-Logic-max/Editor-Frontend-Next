@@ -29,3 +29,16 @@ export const deleteDocument = async (id: string) => {
     const response = await api.delete(`/documents/${id}`);
     return response;
 };
+
+export const addMediaToDocument = async (
+  documentId: string,
+  media: { filename: string; url: string; type: string }
+) => {
+  const response = await api.post(`/documents/${documentId}/media`, media);
+  return response;
+};
+
+export const removeMediaFromDocument = async (documentId: string, filename: string) => {
+  const response = await api.delete(`/documents/${documentId}/media/${filename}`);
+  return response;
+};

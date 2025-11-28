@@ -10,7 +10,7 @@ import { AppearanceDocumentModal } from '@/components/documents/AppearanceDocume
 import { SettingsDocumentModal } from '@/components/documents/SettingsDocumentModal';
 import { DeleteDocumentModal } from '@/components/documents/DeleteDocumentModal';
 import { EditDocumentModal } from '@/components/documents/EditDocumentModal';
-import { InviteModal } from '@/components/modal/InviteCollaboratorModal';
+import { InviteModal } from '@/components/links/InviteCollaboratorModal';
 import { Badge } from '@/components/ui/badge';
 
 import { HiOutlineDocumentDuplicate, HiOutlineUserGroup } from 'react-icons/hi2';
@@ -62,7 +62,7 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
 
   if (isSidebar) {
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 overflow-y-auto">
         {documents.map((doc) => {
           const isCreator = user?._id === doc.creator._id;
           const hasCollaborators = doc?.collaborators?.length > 0;

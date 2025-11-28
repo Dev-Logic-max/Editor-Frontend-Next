@@ -14,11 +14,12 @@ import { MotionDiv } from '@/components/common/MotionDiv';
 
 interface FloatingToolbarProps {
   editor: Editor | null;
+  documentId: string;
   onAIStart?: (originalText: string, action: string) => void;
   onAIComplete?: (originalText: string, result: string, action: string) => void;
 }
 
-export function FloatingToolbar({ editor, onAIStart, onAIComplete }: FloatingToolbarProps) {
+export function FloatingToolbar({ editor, onAIStart, onAIComplete, documentId }: FloatingToolbarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const [showLinkInput, setShowLinkInput] = useState(false);
