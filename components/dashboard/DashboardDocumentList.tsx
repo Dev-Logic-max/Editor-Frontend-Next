@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,14 +17,24 @@ import { useDocuments } from '@/hooks/useDocuments';
 import toast from 'react-hot-toast';
 
 export function DashboardDocumentList() {
-  const { documents, fetchDocuments, deleteDocument } = useDocuments();
+  const router = useRouter();
+  const { documents, loading, isEmpty, refetch, createDocument, deleteDocument } = useDocuments();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
+  const handleCreateDocument = async () => {
+    setIsCreating(true);
+    try {
+      const newDoc = await createDocument({ title: 'Untitled Document' });
+      router.push(`/documents/${newDoc._id}`);
+    } catch (error) {
+      console.error('Failed to create document:', error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (selectedDocId) {
@@ -38,8 +49,7 @@ export function DashboardDocumentList() {
     }
   };
 
-
-  console.log("Documents", documents)
+  console.log("Dashboard Documents List", documents)
 
   return (
     <div className='px-4 py-4 mt-4 rounded-xl border'>

@@ -13,7 +13,7 @@ export const deleteProfilePhoto = async () => {
   return response.data;
 };
 
-export const uploadImage = async (file: File): Promise<{ filename: string; url: string }> => {
+export const uploadImage = async (file: File): Promise<{ filename: string; url: string; size: number }> => {
   const formData = new FormData();
   formData.append('image', file);
 
@@ -26,5 +26,21 @@ export const uploadImage = async (file: File): Promise<{ filename: string; url: 
 
 export const deleteImage = async (filename: string) => {
   const response = await api.delete(`/uploads/image/${filename}`);
+  return response.data;
+};
+
+export const uploadVideo = async (file: File): Promise<{ filename: string; url: string; size: number }> => {
+  const formData = new FormData();
+  formData.append('video', file);
+
+  const response = await api.post('/uploads/video', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+  return response.data;
+};
+
+export const deleteVideo = async (filename: string) => {
+  const response = await api.delete(`/uploads/video/${filename}`);
   return response.data;
 };

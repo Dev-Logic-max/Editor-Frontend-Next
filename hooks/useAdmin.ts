@@ -48,15 +48,25 @@ export function useAdmin() {
     }
   }, []);
 
-  const refreshUsers = () => {
+  const refreshUsersV0 = () => {
     setUsersPage(1);
     fetchUsers(1);
   };
 
-  const refreshDocs = () => {
+  const refreshDocsV0 = () => {
     setDocsPage(1);
     fetchDocuments(1);
   };
+
+  const refreshUsers = useCallback(() => {
+    setUsersPage(1);
+    fetchUsers(1);
+  }, [fetchUsers]);
+
+  const refreshDocs = useCallback(() => {
+    setDocsPage(1);
+    fetchDocuments(1);
+  }, [fetchDocuments]);
 
   return {
     users,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -26,10 +26,11 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/hooks/useAuth';
 
 export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean }) {
+  const router = useRouter();
   const { user } = useAuth();
   const pathname = usePathname();
   const { settings } = useEditorSettings();
-  const { documents, fetchDocuments, deleteDocument } = useDocuments();
+  const { documents, loading, deleteDocument } = useDocuments();
 
   const [selectedDocId, setSelectedDocId] = useState<string>('');
 
@@ -41,10 +42,6 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
 
   const layout = settings.appearance?.layout;
 
-  useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
-
   const handleDelete = async () => {
     if (selectedDocId) {
       try {
@@ -52,13 +49,12 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
         toast.success('Document deleted successfully');
         setDeleteModalOpen(false);
         setSelectedDocId('');
+        router.back()
       } catch (error: any) {
         toast.error(error.message || 'Failed to delete document');
       }
     }
   };
-
-  console.log("Hello Impossible", documents)
 
   if (isSidebar) {
     return (
@@ -70,10 +66,7 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
           return (
             <div
               key={doc._id}
-              className={`group flex justify-between items-center px-2 py-1.5 rounded-lg transition-all duration-300 bg-linear-to-r ${pathname === `/editor/${doc._id}`
-                ? 'from-green-100/80 to-purple-100/80 hover:bg-blue-100 shadow-md'
-                : 'hover:from-blue-100/80 hover:to-purple-100/80'
-                } transition-all duration-300`}
+              className={`group flex justify-between items-center px-2 py-1.5 rounded-lg transition-all duration-300 bg-linear-to-r ${pathname === `/editor/${doc._id}` ? 'from-green-100/80 to-purple-100/80 hover:bg-blue-100 shadow-md' : 'hover:from-blue-100/80 hover:to-purple-100/80'}`}
             >
               <Link href={`/editor/${doc._id}`} className="flex items-center gap-2 truncate">
                 <IoDocumentTextOutline className='w-5 h-5' />

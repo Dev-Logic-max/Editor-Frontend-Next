@@ -31,7 +31,7 @@ export function Sidebar() {
     try {
       const response = await createDocument({ title: 'New Document' });
       toast.success('Document created successfully');
-      router.push(`/editor/${response.data.data._id}`);
+      router.push(`/editor/${response._id}`);
     } catch (error: any) {
       toast.error(error.message || 'Failed to create document');
     }

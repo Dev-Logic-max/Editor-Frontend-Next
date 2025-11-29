@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { useDocuments } from '@/hooks/useDocuments';
 
 interface Props {
   isOpen: boolean;
@@ -67,6 +68,7 @@ const typeInstructions: Record<string, { title: string; instructions: string[]; 
 
 export function UploadModal({ isOpen, onClose, documentType }: Props) {
   const router = useRouter();
+  const { refetch } = useDocuments();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [uploading, setUploading] = useState(false);
@@ -187,6 +189,8 @@ export function UploadModal({ isOpen, onClose, documentType }: Props) {
         documentId: data.documentId,
         title: data.title,
       }));
+
+      refetch()
 
       setUploadComplete(true);
       toast.success(`${file.name} uploaded successfully!`);

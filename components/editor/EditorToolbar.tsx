@@ -361,6 +361,7 @@ export function EditorToolbar({ editor, documentId, onAIStart, onAIComplete }: E
 
       <ImageUploadModal
         editor={editor}
+        documentId={documentId}
         isOpen={imageModalOpen}
         onClose={() => setImageModalOpen(false)}
       />

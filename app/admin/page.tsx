@@ -75,10 +75,29 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!authLoading && user?.role === 'admin') {
+      fetchUsers(1);
+      fetchDocuments(1);
+    }
+  }, [authLoading, user?.role]);
+
+  useEffect(() => {
+    if (user?.role === 'admin' && usersPage > 1) {
       fetchUsers(usersPage);
+    }
+  }, [usersPage]); // Only when page changes
+
+  useEffect(() => {
+    if (user?.role === 'admin' && docsPage > 1) {
       fetchDocuments(docsPage);
     }
-  }, [authLoading, user, usersPage, docsPage, fetchUsers, fetchDocuments]);
+  }, [docsPage]);
+
+  // useEffect(() => {
+  //   if (!authLoading && user?.role === 'admin') {
+  //     fetchUsers(usersPage);
+  //     fetchDocuments(docsPage);
+  //   }
+  // }, [authLoading, user, usersPage, docsPage, fetchUsers, fetchDocuments]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);

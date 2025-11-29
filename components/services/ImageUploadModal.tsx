@@ -3,30 +3,51 @@
 import { useState } from 'react';
 import { Editor } from '@tiptap/react';
 import { motion } from 'framer-motion';
-import { X, Image as ImageIcon, Upload, Link as LinkIcon } from 'lucide-react';
+import { X, Image as ImageIcon, Upload, Link as LinkIcon, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import toast from 'react-hot-toast';
 import { uploadImage } from '@/lib/api/uploads';
+import { addMediaToDocument } from '@/lib/api/documents';
 
 interface ImageUploadModalProps {
     editor: Editor | null;
+    documentId: string;
     isOpen: boolean;
     onClose: () => void;
 }
 
-export function ImageUploadModal({ editor, isOpen, onClose }: ImageUploadModalProps) {
+export function ImageUploadModal({ editor, documentId, isOpen, onClose }: ImageUploadModalProps) {
     const [imageUrl, setImageUrl] = useState('');
     const [uploading, setUploading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
 
     // Handle URL insertion
-    const handleInsertUrl = () => {
+    const handleInsertUrl = async () => {
         if (!editor || !imageUrl.trim()) {
             toast.error('Please enter a valid URL');
             return;
+        }
+
+        // ✅ NEW: Add URL-based images to Media Library too
+        try {
+            // Extract filename from URL
+            const filename = imageUrl.split('/').pop() || 'external-image';
+
+            // Add to Media Library (but mark as external URL)
+            await addMediaToDocument(documentId, {
+                filename: `url_${Date.now()}_${filename}`,
+                url: imageUrl, // Store the external URL directly
+                size: 0,
+                type: 'image',
+            });
+
+            console.log('📚 External URL added to Media Library');
+        } catch (error) {
+            console.warn('⚠️ Failed to add URL to media library:', error);
+            // Continue anyway - insert the image even if library add fails
         }
 
         editor.chain().focus().setImage({ src: imageUrl }).run();
@@ -53,51 +74,33 @@ export function ImageUploadModal({ editor, isOpen, onClose }: ImageUploadModalPr
 
         setUploading(true);
 
-        // try {
-        //     const formData = new FormData();
-        //     formData.append('image', file);
-
-        //     // ✅ UPDATED: Call NestJS backend
-        //     const token = localStorage.getItem('access_token');
-        //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/uploads/image`, {
-        //         method: 'POST',
-        //         headers: {
-        //             'Authorization': `Bearer ${token}`,
-        //         },
-        //         body: formData,
-        //     });
-
-        //     if (!response.ok) {
-        //         const error = await response.json();
-        //         throw new Error(error.message || 'Upload failed');
-        //     }
-
-        //     const data = await response.json();
-        //     //   const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/uploads/images/${data.filename}`;
-        //     const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${data.url}`;
-
-        //     // Insert image into editor
-        //     editor.chain().focus().setImage({ src: imageUrl }).run();
-        //     toast.success('✅ Image uploaded and inserted!');
-        //     onClose();
-        // } catch (error: any) {
-        //     console.error('Upload error:', error);
-        //     toast.error(error.message || 'Failed to upload image');
-        // } finally {
-        //     setUploading(false);
-        // }
-
         try {
-            // ✅ Use the API helper
-            const data = await uploadImage(file);
-            const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${data.url}`;
+            console.log('📤 Uploading image:', file.name);
 
-            // Insert image into editor
-            editor.chain().focus().setImage({ src: imageUrl }).run();
+            // 1. Upload to backend storage
+            const uploadResponse = await uploadImage(file);
+            console.log('✅ Upload response:', uploadResponse);
+
+            const { filename, url, size } = uploadResponse;
+            const fullImageUrl = `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+
+            // 2. Add to Media Library (document's media array)
+            await addMediaToDocument(documentId, {
+                filename,
+                url,
+                size,
+                type: 'image',
+            });
+            console.log('📚 Added to Media Library');
+
+            // 3. Insert image into editor
+            editor.chain().focus().setImage({ src: fullImageUrl }).run();
+            console.log('📝 Inserted into editor');
+
             toast.success('✅ Image uploaded and inserted!');
             onClose();
         } catch (error: any) {
-            console.error('Upload error:', error);
+            console.error('💥 Upload error:', error);
             toast.error(error.message || 'Failed to upload image');
         } finally {
             setUploading(false);
@@ -159,14 +162,7 @@ export function ImageUploadModal({ editor, isOpen, onClose }: ImageUploadModalPr
                             onDragLeave={handleDrag}
                             onDragOver={handleDrag}
                             onDrop={handleDrop}
-                            className={`
-                border-2 border-dashed rounded-lg p-8 text-center transition-colors
-                ${dragActive
-                                    ? 'border-purple-500 bg-purple-50'
-                                    : 'border-gray-300 hover:border-gray-400'
-                                }
-                ${uploading ? 'opacity-50 pointer-events-none' : ''}
-              `}
+                            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:border-gray-400'} ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                         >
                             <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
                             <p className="text-sm text-gray-600 mb-2">
@@ -193,7 +189,7 @@ export function ImageUploadModal({ editor, isOpen, onClose }: ImageUploadModalPr
                                 </Button>
                             </label>
                             <p className="text-xs text-gray-500 mt-2">
-                                Max size: 5MB • Formats: JPG, PNG, GIF, WebP
+                                Max size: 10MB • Formats: JPG, PNG, GIF, WebP
                             </p>
                         </div>
 
@@ -207,6 +203,14 @@ export function ImageUploadModal({ editor, isOpen, onClose }: ImageUploadModalPr
                                 Uploading image...
                             </div>
                         )}
+
+                        {/* ✅ NEW: Info message about Media Library */}
+                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <p className="text-xs text-purple-800 flex items-center gap-1">
+                                <FolderOpen className="h-3 w-3" />
+                                <strong>Note:</strong> Uploaded images are saved to your Media Library for reuse.
+                            </p>
+                        </div>
                     </TabsContent>
 
                     {/* URL Tab */}

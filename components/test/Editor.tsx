@@ -361,6 +361,22 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
     }
   }, [editor, providerReady, docData.content]);
 
+  useEffect(() => {
+    if (!editor || !providerReady) return;
+
+    console.log('🔍 Editor state:', {
+      hasContent: !!editor.state.doc.content.size,
+      docSize: editor.state.doc.content.size,
+      text: editor.getText(),
+      json: editor.getJSON()
+    });
+
+    console.log('🔍 Y.Doc state:', {
+      yDocSize: ydocRef.current?.getXmlFragment('document').length,
+      yDocContent: ydocRef.current?.getXmlFragment('document').toArray()
+    });
+  }, [editor, providerReady]);
+
   // 🔎 Debug: extension list + provider state
   useEffect(() => {
     console.log(' 📦 Editor extensions:', editor?.extensionManager.extensions.map((e: any) => e.name));
@@ -536,7 +552,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         onAIComplete={handleAIComplete}
       />
 
-      {settings.ui.showFloatingToolbar && <FloatingToolbar editor={editor} documentId={docData._id}/>}
+      {settings.ui.showFloatingToolbar && <FloatingToolbar editor={editor} documentId={docData._id} />}
 
       <SlashCommandMenu editor={editor} />
 
