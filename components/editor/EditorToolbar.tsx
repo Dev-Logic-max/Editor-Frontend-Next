@@ -23,12 +23,13 @@ import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
 
 interface EditorToolbarProps {
   editor: any;
+  document?: any;
   documentId: string;
   onAIStart?: (originalText: string, action: string) => void;
   onAIComplete?: (originalText: string, result: string, action: string) => void;
 }
 
-export function EditorToolbar({ editor, documentId, onAIStart, onAIComplete }: EditorToolbarProps) {
+export function EditorToolbar({ editor, document, documentId, onAIStart, onAIComplete }: EditorToolbarProps) {
   const { settings } = useEditorSettings();
   const [headingLevel, setHeadingLevel] = useState('Paragraph');
   const [tableModalOpen, setTableModalOpen] = useState(false);
@@ -140,6 +141,8 @@ export function EditorToolbar({ editor, documentId, onAIStart, onAIComplete }: E
     URL.revokeObjectURL(url);
     toast.success('Document downloaded!');
   };
+
+  console.log("Document Editor Toolbar", document)
 
   if (!editor) return null;
 
@@ -376,8 +379,17 @@ export function EditorToolbar({ editor, documentId, onAIStart, onAIComplete }: E
         isOpen={mediaLibraryOpen}
         onClose={() => setMediaLibraryOpen(false)}
         documentId={documentId}
+        documentTitle={document.title}
         editor={editor}
       />
+
+      {/* <MediaLibraryModal
+        isOpen={mediaLibraryOpen}
+        onClose={() => setMediaLibraryOpen(false)}
+        documentId={documentId}
+        documentTitle={document.title} // ✅ ADD THIS
+        editor={editor}
+      /> */}
     </>
   );
 }

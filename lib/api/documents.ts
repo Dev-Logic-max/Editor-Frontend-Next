@@ -32,7 +32,7 @@ export const deleteDocument = async (id: string) => {
 
 export const addMediaToDocument = async (
   documentId: string,
-  media: { filename: string; url: string; type: string; size: number }
+  media: { filename: string; originalName: string; url: string; type: string; size: number }
 ) => {
   const response = await api.post(`/documents/${documentId}/media`, media);
   return response;
@@ -50,5 +50,10 @@ export const getDocumentMedia = async (documentId: string) => {
 
 export const getAllUserMedia = async () => {
   const response = await api.get('/documents/user/media');
+  return response;
+};
+
+export const renameMedia = async (documentId: string, filename: string, originalName: string) => {
+  const response = await api.put(`/documents/${documentId}/media/${filename}/rename`, { originalName });
   return response;
 };

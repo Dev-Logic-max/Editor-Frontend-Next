@@ -547,6 +547,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
 
       <ToolbarComponent
         editor={editor}
+        document={docData}
         documentId={docData._id}
         onAIStart={handleAIStart}
         onAIComplete={handleAIComplete}
