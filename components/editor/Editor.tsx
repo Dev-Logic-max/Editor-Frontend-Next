@@ -5,9 +5,17 @@ import toast from 'react-hot-toast';
 
 import * as Y from 'yjs';
 import { useEditor } from '@tiptap/react';
+import Color from '@tiptap/extension-color';
 import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit';
+import { Table } from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import Underline from '@tiptap/extension-underline';
+import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
+import TableCell from '@tiptap/extension-table-cell';
+import DragHandle from '@tiptap/extension-drag-handle';
+import TableHeader from '@tiptap/extension-table-header';
 import Collaboration from '@tiptap/extension-collaboration';
 import CharacterCount from '@tiptap/extension-character-count';
 import CollaborationCaret from '@tiptap/extension-collaboration-caret';
@@ -20,21 +28,29 @@ import { hashString } from '@/utils/hash';
 import { debouncedSave } from '@/utils/debounce';
 import { updateDocument } from '@/lib/api/documents';
 
+import { TextStyle } from '@tiptap/extension-text-style';
+
 import { EditorHeader } from '@/components/editor/EditorHeader';
 import { EditorInfoBar } from '@/components/editor/EditorInfoBar';
 import { EditorToolbar } from '@/components/editor/EditorToolbar';
 import { EditorStatusBar } from '@/components/editor/EditorStatusBar';
+import { FloatingToolbar } from '@/components/editor/FloatingToolbar';
+import { SlashCommandMenu } from '@/components/editor/SlashCommandMenu';
 import { EditorContentComponent } from '@/components/editor/EditorContent';
 
 import { ChatModal } from '@/components/chat/ChatModal';
+import { AIToolbar } from '@/components/editor/AIToolbar';
 import { MotionDiv } from '@/components/common/MotionDiv';
-import { HocuspocusProvider } from '@hocuspocus/provider';
-import { FloatingToolbar } from '@/components/editor/FloatingToolbar';
-import { SlashCommandMenu } from '@/components/editor/SlashCommandMenu';
+import { EditorLoader } from '@/components/editor/EditorLoader';
+import { AIComparisonSidebar } from '@/components/layout/AISidebar';
+import { AINotionStyle } from '@/components/extensions/AINotionStyle';
 import EmojiPickerFloating from '@/components/common/EmojiPickerFloating';
+import { AIInlineSuggestion } from '@/components/extensions/AIInlineSuggestion';
 
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import { PiChatCircleTextBold } from 'react-icons/pi';
 import '../../styles/editor.css';
+import { FaHistory } from 'react-icons/fa';
 
 interface EditorProps {
   docData?: any;
@@ -45,12 +61,36 @@ interface EditorProps {
 export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) {
   const { user } = useAuth();
   const { settings } = useEditorSettings();
-  const [chatModalOpen, setChatModalOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState('Saved');
   const [connectionStatus, setConnectionStatus] = useState('Connecting...');
 
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [providerReady, setProviderReady] = useState(false);
+
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
+
+  const [showNotionAI, setShowNotionAI] = useState(false);
+  const [currentAISuggestion, setCurrentAISuggestion] = useState({
+    text: '',
+    action: ''
+  });
+
+  const [showInlineSuggestion, setShowInlineSuggestion] = useState(false);
+  const [currentSuggestion, setCurrentSuggestion] = useState({
+    original: '',
+    suggested: '',
+    action: ''
+  });
+
+  const [aiHistory, setAiHistory] = useState<Array<{
+    original: string;
+    improved: string;
+    action: string;
+    timestamp: Date;
+    model: string;
+    status: 'pending' | 'accepted' | 'rejected' | 'error';
+  }>>([]);
 
   const layout = settings.appearance?.layout ?? EditorLayout.Document;
 
@@ -177,12 +217,10 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ undoRedo: false }),
-      // 🔗 Collaboration uses the shared Y.Doc & 'document' field
       Collaboration.configure({
         document: ydocRef.current!,
         field: 'document',
       }),
-      // 🖋️ Collaboration caret shows remote cursors & labels (render + selectionRender)
       CollaborationCaret.configure({
         provider: providerRef.current!,
         render: (user) => {
@@ -226,15 +264,38 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
           'data-user-name': user.user?.name || user.name || 'Anonymous',
         }),
       }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Image.configure({ inline: false, allowBase64: true }),
+      DragHandle.configure({
+        render: () => {
+          const element = document.createElement('div');
+          element.className = 'drag-handle cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100';
+          element.setAttribute('draggable', 'true');
+          element.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/><circle cx="16" cy="16" r="2"/></svg>`;
+          return element;
+        },
+      }),
+      Color,
+      TextStyle,
+      Underline,
+      Highlight.configure({ multicolor: true }),
       CharacterCount.configure({ limit: 100000 }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Image.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: 'tiptap-image' } }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: 'tiptap-table',
+        },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     immediatelyRender: false,
-    content: '', // Start empty, let collaboration handle content (populate document)
+    content: '',
     editorProps: {
       attributes: { class: '' },
     },
+
     onUpdate: ({ editor, transaction }) => {
       // Only save if it's a user-initiated change
       if (!transaction) return;
@@ -294,9 +355,26 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         console.log('🔁 [Content] Applied initial server content to editor (once)');
       }
     } catch (err) {
+      toast.error('Failed to load document content');
       console.warn('⚠️[Content] Initial sync error:', err);
     }
   }, [editor, providerReady, docData.content]);
+
+  useEffect(() => {
+    if (!editor || !providerReady) return;
+
+    console.log('🔍 Editor state:', {
+      hasContent: !!editor.state.doc.content.size,
+      docSize: editor.state.doc.content.size,
+      text: editor.getText(),
+      json: editor.getJSON()
+    });
+
+    console.log('🔍 Y.Doc state:', {
+      yDocSize: ydocRef.current?.getXmlFragment('document').length,
+      yDocContent: ydocRef.current?.getXmlFragment('document').toArray()
+    });
+  }, [editor, providerReady]);
 
   // 🔎 Debug: extension list + provider state
   useEffect(() => {
@@ -304,23 +382,143 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
     console.log(' 🔌 Provider ready:', providerReady, 'Provider present:', !!providerRef.current);
   }, [editor, providerReady]);
 
+  // ✨ UPDATED: AI handlers with history tracking
+  const handleAIStart = (text: string, action: string) => {
+    console.log('🎨 AI Processing started:', action);
+  };
+
+  const handleAIComplete = (original: string, result: string, action: string) => {
+    console.log('🎯 AI Complete called with:', { original, result, action });
+
+    // Show Notion-style inline suggestion
+    setCurrentAISuggestion({
+      text: result,
+      action
+    });
+    setShowNotionAI(true);
+
+    // Show inline suggestion
+    setCurrentSuggestion({
+      original,
+      suggested: result,
+      action
+    });
+    setShowInlineSuggestion(false);
+
+    // Add to history
+    // Version 0
+    // setAiHistory(prev => [{
+    //   original,
+    //   improved: result,
+    //   action,
+    //   timestamp: new Date()
+    // }, ...prev]);
+
+    // Add to history
+    const newHistoryItemV0 = {
+      original,
+      improved: result,
+      action,
+      timestamp: new Date()
+    };
+
+    // Add to history with model and pending status
+    const newHistoryItem = {
+      original,
+      improved: result,
+      action,
+      timestamp: new Date(),
+      model: 'llama-3.3-70b-versatile', // Get from settings if available
+      status: 'pending' as const
+    };
+
+    setAiHistory(prev => {
+      const updated = [newHistoryItem, ...prev];
+      console.log('📝 History updated to:', updated);
+      return updated;
+    });
+
+    console.log('✅ AI Processing complete');
+  };
+
+  const handleAcceptInlineSuggestion = () => {
+    // Update the most recent history item to 'accepted'
+    setAiHistory(prev => {
+      if (prev.length === 0) return prev;
+      const updated = [...prev];
+      updated[0] = { ...updated[0], status: 'accepted' as const };
+      return updated;
+    });
+
+    setShowInlineSuggestion(false);
+    setCurrentSuggestion({ original: '', suggested: '', action: '' });
+  };
+
+  const handleRejectInlineSuggestion = () => {
+    // Update the most recent history item to 'rejected'
+    setAiHistory(prev => {
+      if (prev.length === 0) return prev;
+      const updated = [...prev];
+      updated[0] = { ...updated[0], status: 'rejected' as const };
+      return updated;
+    });
+
+    setShowInlineSuggestion(false);
+    setCurrentSuggestion({ original: '', suggested: '', action: '' });
+  };
+
+  const handleAcceptNotionAI = () => {
+    // Update the most recent history item to 'accepted'
+    setAiHistory(prev => {
+      if (prev.length === 0) return prev;
+      const updated = [...prev];
+      updated[0] = { ...updated[0], status: 'accepted' as const };
+      return updated;
+    });
+
+    setShowNotionAI(false);
+    setCurrentAISuggestion({ text: '', action: '' });
+  };
+
+  const handleRejectNotionAI = () => {
+    // Update the most recent history item to 'rejected'
+    setAiHistory(prev => {
+      if (prev.length === 0) return prev;
+      const updated = [...prev];
+      updated[0] = { ...updated[0], status: 'rejected' as const };
+      return updated;
+    });
+
+    setShowNotionAI(false);
+    setCurrentAISuggestion({ text: '', action: '' });
+  };
+
   // NEW: Choose toolbar based on setting
   const showFloating = settings.ui.showFloatingToolbar;
   const ToolbarComponent = showFloating ? FloatingToolbar : EditorToolbar;
 
-  if (!user) return <div>Loading user...</div>;
-  if (!editor) return <div>Loading editor...</div>;
-  if (!providerReady) return <div>Waiting for initial sync...</div>;
-  if (!providerRef.current) return <div>Initializing collaboration...</div>;
+  const documentContentV0 = editor ? editor.getText() : '';
+
+  const documentContent = useMemo(() => {
+    if (!editor) return '';
+    return editor.state.doc.textContent || editor.getText() || '';
+  }, [editor?.state.doc]);
+
+  if (!user) return <EditorLoader message="Loading user profile..." />;
+  if (!editor) return <EditorLoader message="Initializing editor..." />;
+  if (!providerReady) return <EditorLoader message="Syncing with collaborators..." />;
+  if (!providerRef.current) return <EditorLoader message="Setting up collaboration..." />;
 
   console.log("Settings", settings)
   console.log("Layout:", layout);
+  console.log("Editor Ai History", aiHistory)
 
   return (
-    <div className={`min-h-screen ${layout === EditorLayout.Document ? '' : 'rounded-lg'} bg-white overflow-hidden relative transition-all duration-300`}>
+    <div className={`${layout === EditorLayout.Document ? '' : 'rounded-lg'} bg-white relative transition-all duration-300`}>
       <EditorHeader
         editor={editor}
         document={docData}
+        aiHistory={aiHistory}
         title={docData.title}
         activeUsers={activeUsers}
         // onTitleChange={onUpdateTitle}
@@ -346,26 +544,49 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         />
       )}
 
-      <ToolbarComponent editor={editor} />
+      <ToolbarComponent
+        editor={editor}
+        document={docData}
+        documentId={docData._id}
+        onAIStart={handleAIStart}
+        onAIComplete={handleAIComplete}
+      />
 
-      {settings.ui.showFloatingToolbar && <FloatingToolbar editor={editor} />}
+      {settings.ui.showFloatingToolbar && <FloatingToolbar editor={editor} documentId={docData._id} />}
 
       <SlashCommandMenu editor={editor} />
 
       {settings.ui.showEmojiPicker && <EmojiPickerFloating editor={editor} />}
 
+      <EditorContentComponent editor={editor} />
+
+      {editor && (
+        <>
+          {/* <div className="sticky top-16 z-10 p-2 bg-white border-b">
+            <AIToolbar editor={editor} />
+          </div> */}
+        </>
+      )}
+
       <span
         onClick={() => setChatModalOpen(!chatModalOpen)}
-        className="flex items-center rounded-full p-2 text-green-600 bg-gray-100 absolute bottom-9 right-5 cursor-pointer hover:bg-green-200 border z-20"
+        className="flex items-center rounded-full p-2 text-green-600 bg-gray-100 absolute bottom-0 right-5 cursor-pointer hover:bg-green-200 border z-20"
       >
         <PiChatCircleTextBold className="w-7 h-7" />
+      </span>
+
+      <span
+        onClick={() => { setAiSidebarOpen(true) }}
+        className="flex items-center rounded-full p-2 text-purple-600 bg-gray-100 absolute bottom-0 right-20 cursor-pointer hover:bg-purple-200 border z-20"
+      >
+        <FaHistory className="w-7 h-7" />
       </span>
 
       <MotionDiv
         initial={{ opacity: 0, scale: 0.8, y: 20 }}
         animate={{ opacity: chatModalOpen ? 1 : 0, scale: chatModalOpen ? 1 : 0.8, y: chatModalOpen ? 0 : 20 }}
         transition={{ duration: 0.25, type: "spring", stiffness: 300 }}
-        className="absolute bottom-24 right-4 z-50"
+        className="absolute bottom-0 right-0 z-20"
         style={{ pointerEvents: chatModalOpen ? 'auto' : 'none' }}
       >
         {ydoc && provider && (
@@ -380,7 +601,32 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         )}
       </MotionDiv>
 
-      <EditorContentComponent editor={editor} />
+      <AINotionStyle
+        editor={editor}
+        isActive={showNotionAI}
+        suggestedText={currentAISuggestion.text}
+        action={currentAISuggestion.action}
+        onAccept={handleAcceptNotionAI}
+        onReject={handleRejectNotionAI}
+      />
+
+      {/* <AIInlineSuggestion
+        editor={editor}
+        isVisible={showInlineSuggestion}
+        originalText={currentSuggestion.original}
+        suggestedText={currentSuggestion.suggested}
+        action={currentSuggestion.action}
+        onAccept={handleAcceptInlineSuggestion}
+        onReject={handleRejectInlineSuggestion}
+      /> */}
+
+      <AIComparisonSidebar
+        editor={editor}
+        history={aiHistory}
+        isOpen={aiSidebarOpen}
+        onClose={() => setAiSidebarOpen(false)}
+        documentContent={documentContent}
+      />
     </div>
   );
 }

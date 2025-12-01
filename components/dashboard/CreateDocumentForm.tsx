@@ -26,7 +26,7 @@ export function CreateDocumentForm() {
         try {
             const response = await createDocument(data);
             toast.success('Document created successfully');
-            router.push(`/editor/${response.data.data._id}`);
+            router.push(`/editor/${response._id}`);
         } catch (error: any) {
             toast.error(error.message);
             toast.error('Failed to create document');

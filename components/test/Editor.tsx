@@ -41,9 +41,10 @@ import { EditorContentComponent } from '@/components/editor/EditorContent';
 import { ChatModal } from '@/components/chat/ChatModal';
 import { AIToolbar } from '@/components/editor/AIToolbar';
 import { MotionDiv } from '@/components/common/MotionDiv';
+import { EditorLoader } from '@/components/editor/EditorLoader';
 import { AIComparisonSidebar } from '@/components/layout/AISidebar';
 import { AINotionStyle } from '@/components/extensions/AINotionStyle';
-import { CustomParagraph } from '@/components/extensions/CustomParagraph';
+// import { CustomParagraph } from '@/components/extensions/CustomParagraph';
 import EmojiPickerFloating from '@/components/common/EmojiPickerFloating';
 import { AIInlineSuggestion } from '@/components/extensions/AIInlineSuggestion';
 
@@ -276,7 +277,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       Color,
       TextStyle,
       Underline,
-      CustomParagraph,
+      // CustomParagraph,
       Highlight.configure({ multicolor: true }),
       CharacterCount.configure({ limit: 100000 }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -505,10 +506,10 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
     return editor.state.doc.textContent || editor.getText() || '';
   }, [editor?.state.doc]);
 
-  if (!user) return <div>Loading user...</div>;
-  if (!editor) return <div>Loading editor...</div>;
-  if (!providerReady) return <div>Waiting for initial sync...</div>;
-  if (!providerRef.current) return <div>Initializing collaboration...</div>;
+  if (!user) return <EditorLoader message="Loading user profile..." />;
+  if (!editor) return <EditorLoader message="Initializing editor..." />;
+  if (!providerReady) return <EditorLoader message="Syncing with collaborators..." />;
+  if (!providerRef.current) return <EditorLoader message="Setting up collaboration..." />;
 
   console.log("Settings", settings)
   console.log("Layout:", layout);

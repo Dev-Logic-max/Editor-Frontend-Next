@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
-import { DashboardIcon, DocumentIcon, FileIcon, FolderIcon, SettingsIcon, UsersIcon } from '@/components/icons/Document';
+import { DashboardIcon, DocumentIcon, FileIcon, FolderIcon, SettingsIcon, TemplateIcon, UsersIcon } from '@/components/icons/Document';
 import { SidebarDocumentList } from '@/components/documents/SidebarDocumentList';
 import { Button } from '@/components/ui/button';
 
@@ -13,7 +13,7 @@ import { FaPlus, FaChevronRight, FaChevronLeft, FaBars } from 'react-icons/fa';
 import { LuLayoutDashboard } from "react-icons/lu";
 
 import { useDocuments } from '@/hooks/useDocuments';
-import { MotionDiv } from '../common/MotionDiv';
+import { MotionDiv } from '@/components/common/MotionDiv';
 
 export function Sidebar() {
   const router = useRouter();
@@ -91,6 +91,23 @@ export function Sidebar() {
     </div>
   )
 
+  const Templates = () => (
+    <div className="">
+      <div className="group flex items-center justify-between mb-3">
+        <h2 className="flex items-center text-lg font-semibold text-slate-800">
+          <TemplateIcon className='w-7 h-7 mr-2' /> Templates
+        </h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-purple-400 hover:bg-purple-100"
+        >
+          <FaPlus />
+        </Button>
+      </div>
+    </div>
+  )
+
   return (
     <>
       {/* Mobile Toggle Button */}
@@ -140,6 +157,7 @@ export function Sidebar() {
             <NavSection />
             <Documents />
             <Imports />
+            <Templates />
           </>
         ) : (
           <div className="flex flex-col items-center space-y-5">

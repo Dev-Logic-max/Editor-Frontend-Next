@@ -39,6 +39,7 @@ export function ImageUploadModal({ editor, documentId, isOpen, onClose }: ImageU
             // Add to Media Library (but mark as external URL)
             await addMediaToDocument(documentId, {
                 filename: `url_${Date.now()}_${filename}`,
+                originalName: '',
                 url: imageUrl, // Store the external URL directly
                 size: 0,
                 type: 'image',
@@ -81,12 +82,13 @@ export function ImageUploadModal({ editor, documentId, isOpen, onClose }: ImageU
             const uploadResponse = await uploadImage(file);
             console.log('✅ Upload response:', uploadResponse);
 
-            const { filename, url, size } = uploadResponse;
+            const { filename, originalName, url, size } = uploadResponse;
             const fullImageUrl = `${process.env.NEXT_PUBLIC_API_URL}${url}`;
 
             // 2. Add to Media Library (document's media array)
             await addMediaToDocument(documentId, {
                 filename,
+                originalName,
                 url,
                 size,
                 type: 'image',
