@@ -2,18 +2,17 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Picker from '@emoji-mart/react';
-import data from '@emoji-mart/data';
+import EmojiPicker from "emoji-picker-react";
 
 interface EmojiPickerProps {
-  onEmojiClick: (emoji: any) => void;   // ← NEW prop
+  onEmojiClick: (emoji: any) => void;
 }
 
 export function ChatEmojiPicker({ onEmojiClick }: EmojiPickerProps) {
   const [showPicker, setShowPicker] = useState(false);
 
-  const handleSelect = (emoji: any) => {
-    onEmojiClick(emoji);
+  const handleEmojiClick = (emojiData: any) => {
+    onEmojiClick(emojiData);
     setShowPicker(false);
   };
 
@@ -25,17 +24,15 @@ export function ChatEmojiPicker({ onEmojiClick }: EmojiPickerProps) {
         onClick={() => setShowPicker((v) => !v)}
         className="text-indigo-600 hover:bg-indigo-100"
       >
-        <span role="img" aria-label="emoji">Emoji</span>
+        <span role="img" aria-label="emoji">😊</span>
       </Button>
 
       {showPicker && (
         <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 bg-white rounded-lg shadow-xl">
-          <Picker
-            data={data}
-            theme="light"
-            onEmojiSelect={handleSelect}
-            previewPosition="none"
-            skinTonePosition="none"
+          <EmojiPicker
+            onEmojiClick={handleEmojiClick}
+            width={350}
+            height={400}
           />
         </div>
       )}

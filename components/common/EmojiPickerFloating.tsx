@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Picker from '@emoji-mart/react'
-import data from '@emoji-mart/data'
+import EmojiPicker from "emoji-picker-react";
 
 interface EmojiPickerFloatingProps {
   editor: any
@@ -113,7 +112,7 @@ export default function EmojiPickerFloating({ editor }: EmojiPickerFloatingProps
               position: 'absolute',
             }}
           >
-            <Picker data={data} onEmojiSelect={addEmoji} theme="light" />
+            <EmojiPicker onEmojiClick={addEmoji} />
           </motion.div>
         )}
       </AnimatePresence>

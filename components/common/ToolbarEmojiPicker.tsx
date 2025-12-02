@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import Picker from '@emoji-mart/react'
-import data from '@emoji-mart/data'
+import EmojiPicker from "emoji-picker-react";
 
-export function EmojiPicker({ editor }: { editor: any }) {
+export function ToolbarEmojiPicker({ editor }: { editor: any }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
   const addEmoji = (emoji: any) => {
@@ -23,12 +22,8 @@ export function EmojiPicker({ editor }: { editor: any }) {
 
       {showEmojiPicker && (
         <div className="absolute z-50 top-10 left-0 bg-white shadow-lg rounded-lg">
-          <Picker
-            data={data}
-            theme="light"
-            onEmojiSelect={addEmoji}
-            skinTonePosition="none"
-            previewPosition="none"
+          <EmojiPicker
+            onEmojiClick={addEmoji}
           />
         </div>
       )}

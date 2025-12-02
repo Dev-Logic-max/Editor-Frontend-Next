@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 import { AIMenu } from '@/components/commands/AIMenu';
 import { LinkModal } from '@/components/services/LinkModal';
-import { EmojiPicker } from '@/components/common/EmojiPicker';
+import { ToolbarEmojiPicker } from '@/components/common/ToolbarEmojiPicker';
 import { ColorPicker } from '@/components/services/ColorPicker';
 import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
 import { ImageUploadModal } from '@/components/services/ImageUploadModal';
@@ -189,7 +189,7 @@ export function EditorToolbar({ editor, document, documentId, onAIStart, onAICom
           onAIComplete={onAIComplete}
         />
 
-        <EmojiPicker editor={editor} />
+        <ToolbarEmojiPicker editor={editor} />
 
         {/* Divider */}
         <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
