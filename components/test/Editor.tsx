@@ -27,6 +27,7 @@ import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
 import { hashString } from '@/utils/hash';
 import { debouncedSave } from '@/utils/debounce';
 import { updateDocument } from '@/lib/api/documents';
+import { cleanTiptapContent } from '@/utils/cleanContent';
 
 import { TextStyle } from '@tiptap/extension-text-style';
 
@@ -50,8 +51,8 @@ import { AIInlineSuggestion } from '@/components/extensions/AIInlineSuggestion';
 
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { PiChatCircleTextBold } from 'react-icons/pi';
-import '../../styles/editor.css';
 import { FaHistory } from 'react-icons/fa';
+import '../../styles/editor.css';
 
 interface EditorProps {
   docData?: any;
@@ -95,6 +96,8 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
 
   const layout = settings.appearance?.layout ?? EditorLayout.Document;
 
+  console.log("[Editor] User", user)
+
   // 🔑 Token for provider auth (client-only)
   const token = localStorage.getItem('access_token');
 
@@ -112,10 +115,25 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
   const { provider, ydoc } = useMemo(() => {
     // create ydoc and provider synchronously (client-only)
     const _ydoc = new Y.Doc();
+    const wsUrl = process.env.NEXT_PUBLIC_HOCUSPOCUS_URL || 'ws://localhost:1234';
+
+    console.log('🔗 Connecting to:', wsUrl);
+    console.log('🔑 Using token:', token?.substring(0, 20) + '...');
+
     const _provider = new HocuspocusProvider({
-      url: `${process.env.NEXT_PUBLIC_HOCUSPOCUS_URL}?token=${token}&userId=${userId}`,
+      // url: `${wsUrl}?token=${encodeURIComponent(token || '')}&userId=${userId}`,
+      url: `${wsUrl}`,
       name: docData._id,
       document: _ydoc,
+
+      // ✅ CRITICAL FIX: Pass token via WebSocket parameters
+      token: token || '', // This sends token in WebSocket handshake
+
+      // ✅ Alternative: Use parameters object
+      // parameters: {
+      //   userId: userId,
+      // },
+
       onConnect: () => {
         console.log('🟢 [Hocuspocus] onConnect');
       },
@@ -126,7 +144,10 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         console.log('🔴 [Hocuspocus] onDisconnect', 'color: red', error);
       },
       onAuthenticationFailed: ({ reason }: any) => {
-        console.warn('⚠️ [Hocuspocus] onAuthenticationFailed', reason);
+        console.warn('⚠️ [Hocuspocus] onAuthenticationFailed:', reason);
+      },
+      onStatus: ({ status }: any) => {
+        console.log('📊 [Hocuspocus] Status:', status);
       },
     });
 
@@ -341,42 +362,85 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
   useCursorAwareness(editor, userId, user, providerRef.current, ydocRef.current, 'document');
 
   // 🔁 8. Initial content reconciliation (apply server content only when Y.Doc empty)
+  // useEffect(() => {
+  //   if (!editor || !ydocRef.current || !providerReady) return;
+
+  //   try {
+  //     const ytext = ydocRef.current.get('document');
+  //     const isEmpty = ytext.toString().length === 0;
+
+  //     // Only set initial content if Y.doc has no content
+  //     if (isEmpty && docData.content) {
+  //       const content = typeof docData.content === 'string' ? JSON.parse(docData.content) : docData.content;
+
+  //       // 🛑 This sets content once — collaboration will then keep Y.Doc authoritative
+  //       editor.commands.setContent(content); // false = don't emit update
+  //       console.log('🔁 [Content] Applied initial server content to editor (once)');
+  //     }
+  //   } catch (err) {
+  //     toast.error('Failed to load document content');
+  //     console.warn('⚠️[Content] Initial sync error:', err);
+  //   }
+  // }, [editor, providerReady, docData.content]);
+
+  // 🔁 8. Initial content reconciliation - UPDATED WITH CLEANING
   useEffect(() => {
     if (!editor || !ydocRef.current || !providerReady) return;
 
-    try {
-      const ytext = ydocRef.current.get('document');
-      const isEmpty = ytext.toString().length === 0;
+    // ✅ Give Collaboration time to sync (300ms)
+    const syncTimeout = setTimeout(() => {
+      try {
+        const fragment = ydocRef.current!.getXmlFragment('document');
+        const yDocHasContent = fragment.length > 0;
+        const editorHasContent = editor.state.doc.content.size > 2;
 
-      // Only set initial content if Y.doc has no content
-      if (isEmpty && docData.content) {
-        const content = typeof docData.content === 'string' ? JSON.parse(docData.content) : docData.content;
+        console.log('🔍 Content check:', {
+          yDocHasContent,
+          yDocLength: fragment.length,
+          editorHasContent,
+          editorSize: editor.state.doc.content.size
+        });
 
-        // 🛑 This sets content once — collaboration will then keep Y.Doc authoritative
-        editor.commands.setContent(content); // false = don't emit update
-        console.log('🔁 [Content] Applied initial server content to editor (once)');
+        // Only load from API if BOTH are empty
+        if (!yDocHasContent && !editorHasContent && docData.content) {
+          let content = typeof docData.content === 'string'
+            ? JSON.parse(docData.content)
+            : docData.content;
+
+          // ✅ CRITICAL: Clean the content before setting it
+          console.log('🧹 Cleaning content before loading...');
+          content = cleanTiptapContent(content);
+
+          console.log('📝 Setting cleaned content to editor');
+          editor.commands.setContent(content);
+          console.log('✅ Content loaded successfully');
+        } else if (yDocHasContent) {
+          console.log('✅ Content synced from Y.Doc (backend)');
+        }
+      } catch (err) {
+        console.error('⚠️[Content] Sync error:', err);
+        toast.error('Failed to load document content');
       }
-    } catch (err) {
-      toast.error('Failed to load document content');
-      console.warn('⚠️[Content] Initial sync error:', err);
-    }
+    }, 300);
+
+    return () => clearTimeout(syncTimeout);
   }, [editor, providerReady, docData.content]);
 
-  useEffect(() => {
-    if (!editor || !providerReady) return;
+  // useEffect(() => {
+  //   if (!editor || !providerReady) return;
 
-    console.log('🔍 Editor state:', {
-      hasContent: !!editor.state.doc.content.size,
-      docSize: editor.state.doc.content.size,
-      text: editor.getText(),
-      json: editor.getJSON()
-    });
+  //   console.log('🔍 Editor state:', {
+  //     hasContent: !!editor.state.doc.content.size,
+  //     docSize: editor.state.doc.content.size,
+  //     text: editor.getText(),
+  //     json: editor.getJSON()
+  //   });
 
-    console.log('🔍 Y.Doc state:', {
-      yDocSize: ydocRef.current?.getXmlFragment('document').length,
-      yDocContent: ydocRef.current?.getXmlFragment('document').toArray()
-    });
-  }, [editor, providerReady]);
+  //   console.log('🔍 Y.Doc state:', {
+  //     yDocSize: ydocRef.current?.getXmlFragment('document').length,
+  //     yDocContent: ydocRef.current?.getXmlFragment('document').toArray()
+  //   });
+  // }, [editor, providerReady]);
 
   // 🔎 Debug: extension list + provider state
   useEffect(() => {

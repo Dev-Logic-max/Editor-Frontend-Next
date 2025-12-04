@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 
 import { uploadImage, uploadVideo, deleteImage, deleteVideo } from '@/lib/api/uploads';
 import { addMediaToDocument, removeMediaFromDocument, renameMedia } from '@/lib/api/documents';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface MediaItem {
   filename: string;
@@ -11,6 +12,23 @@ export interface MediaItem {
   type: 'image' | 'video' | 'document';
   size: number;
   uploadedAt: Date;
+}
+
+export interface MediaItemPro {
+  filename: string;
+  originalName: string;
+  url: string;
+  type: 'image' | 'video' | 'document';
+  size: number;
+  uploadedAt: Date;
+  uploadedBy: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    profilePhoto: string;
+  };
+  documentId: string;
+  documentTitle: string;
 }
 
 export const formatFileSize = (bytes?: number): string => {
@@ -124,6 +142,71 @@ export const handleMediaUpload = async (
       type,
       size,
       uploadedAt: new Date(),
+    });
+  }
+
+  return uploadedFiles;
+};
+
+export const handleMediaUploadPro = async (
+  files: FileList,
+  documentId: string
+): Promise<MediaItemPro[]> => {
+  const {user} = useAuth()
+
+  const uploadedBy = {
+    _id: user!._id,
+    firstName: user!.firstName,
+    lastName: user?.lastName || '',
+    profilePhoto: user?.profilePhoto || '',
+  };
+  
+  const uploadedFiles: MediaItemPro[] = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    let type: 'image' | 'video' | 'document' = 'image';
+    let uploadResponse: any;
+
+    if (file.type.startsWith('image/')) {
+      type = 'image';
+      if (file.size > 50 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 50MB for images)`);
+        continue;
+      }
+      uploadResponse = await uploadImage(file);
+    } else if (file.type.startsWith('video/')) {
+      type = 'video';
+      if (file.size > 150 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 150MB for videos)`);
+        continue;
+      }
+      uploadResponse = await uploadVideo(file);
+    } else {
+      toast.error(`${file.name} is not a supported file type`);
+      continue;
+    }
+
+    const { filename, originalName, documentTitle, url, size } = uploadResponse;
+
+    await addMediaToDocument(documentId, {
+      filename,
+      originalName, // ✅ Include originalName
+      url,
+      type,
+      size,
+    });
+
+    uploadedFiles.push({
+      filename,
+      originalName,
+      url,
+      type,
+      size,
+      uploadedAt: new Date(),
+      uploadedBy,
+      documentId,
+      documentTitle,
     });
   }
 
