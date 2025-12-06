@@ -200,7 +200,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
     };
     const onDisconnect = ({ error }: any) => {
       setConnectionStatus(error ? 'Error' : 'Disconnected');
-      setProviderReady(false);
+      setProviderReady(true);
       console.log('🔴 [Hocuspocus] DISCONNECT', error);
     };
     // const onAuthFailed = ({ reason }: any) => {
@@ -227,7 +227,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       try { ydoc.destroy(); } catch (e) { /* ignore */ }
       providerRef.current = null;
       ydocRef.current = null;
-      setProviderReady(false);
+      setProviderReady(true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [provider, ydoc]);
