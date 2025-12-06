@@ -62,6 +62,7 @@ interface EditorProps {
 
 export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) {
   const { user } = useAuth();
+  const [editorPlan] = useState("Basic")
   const { settings } = useEditorSettings();
   const [saveStatus, setSaveStatus] = useState('Saved');
   const [connectionStatus, setConnectionStatus] = useState('Connecting...');
@@ -116,23 +117,18 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
     // create ydoc and provider synchronously (client-only)
     const _ydoc = new Y.Doc();
     const wsUrl = process.env.NEXT_PUBLIC_HOCUSPOCUS_URL || 'ws://localhost:1234';
+    const urlWithToken = `${wsUrl}?token=${encodeURIComponent(token || '')}`;
 
     console.log('🔗 Connecting to:', wsUrl);
     console.log('🔑 Using token:', token?.substring(0, 20) + '...');
 
     const _provider = new HocuspocusProvider({
-      // url: `${wsUrl}?token=${encodeURIComponent(token || '')}&userId=${userId}`,
-      url: `${wsUrl}`,
+      url: `${urlWithToken}`,
       name: docData._id,
       document: _ydoc,
 
-      // ✅ CRITICAL FIX: Pass token via WebSocket parameters
-      token: token || '', // This sends token in WebSocket handshake
-
-      // ✅ Alternative: Use parameters object
-      // parameters: {
-      //   userId: userId,
-      // },
+      // 🔑 Pass token via WebSocket (handshake) parameters
+      token: token || '',
 
       onConnect: () => {
         console.log('🟢 [Hocuspocus] onConnect');
@@ -144,10 +140,11 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         console.log('🔴 [Hocuspocus] onDisconnect', 'color: red', error);
       },
       onAuthenticationFailed: ({ reason }: any) => {
+        console.info('🔍 Token length:', token?.length);
         console.warn('⚠️ [Hocuspocus] onAuthenticationFailed:', reason);
       },
       onStatus: ({ status }: any) => {
-        console.log('📊 [Hocuspocus] Status:', status);
+        console.log('🗄️ [Hocuspocus] Status:', status);
       },
     });
 
@@ -611,6 +608,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       )}
 
       <ToolbarComponent
+        plan={editorPlan}
         editor={editor}
         document={docData}
         documentId={docData._id}

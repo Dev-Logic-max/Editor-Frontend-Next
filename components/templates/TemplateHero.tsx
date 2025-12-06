@@ -5,7 +5,7 @@ import { Sparkles, FileText, Zap, Clock } from 'lucide-react';
 
 export function TemplateHero() {
   return (
-    <div className="relative overflow-hidden bg-linear-to-br from-blue-600 via-purple-600 to-pink-600 text-white">
+    <div className="relative overflow-hidden bg-linear-to-br from-blue-400 via-purple-400 to-pink-400 text-white">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -94,7 +94,7 @@ export function TemplateHero() {
               <input
                 type="text"
                 placeholder="Search templates..."
-                className="w-full px-6 py-4 pr-12 rounded-2xl text-gray-900 text-lg focus:outline-none focus:ring-4 focus:ring-white/30 shadow-2xl"
+                className="w-full px-6 py-4 pr-12 rounded-2xl text-gray-900 text-lg focus:outline-none focus:ring-4 focus:ring-white/30 shadow-2xl bg-white"
               />
               <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-linear-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

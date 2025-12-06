@@ -61,6 +61,7 @@ interface EditorProps {
 export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) {
   const { user } = useAuth();
   const { settings } = useEditorSettings();
+  const [editorPlan] = useState("Pro")
   const [saveStatus, setSaveStatus] = useState('Saved');
   const [connectionStatus, setConnectionStatus] = useState('Connecting...');
 
@@ -545,6 +546,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       )}
 
       <ToolbarComponent
+        plan={editorPlan}
         editor={editor}
         document={docData}
         documentId={docData._id}

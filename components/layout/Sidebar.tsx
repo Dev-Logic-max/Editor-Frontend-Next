@@ -75,7 +75,7 @@ export function Sidebar() {
   )
 
   const Imports = () => (
-    <div className="">
+    <Link href="/uploads" className='cursor-pointer'>
       <div className="group flex items-center justify-between mb-3">
         <h2 className="flex items-center text-lg font-semibold text-slate-800">
           <FolderIcon className='w-7 h-7 mr-2' /> Imports
@@ -88,11 +88,11 @@ export function Sidebar() {
           <FaPlus />
         </Button>
       </div>
-    </div>
+    </Link>
   )
 
   const Templates = () => (
-    <div className="">
+    <Link href="/templates" className='cursor-pointer'>
       <div className="group flex items-center justify-between mb-3">
         <h2 className="flex items-center text-lg font-semibold text-slate-800">
           <TemplateIcon className='w-7 h-7 mr-2' /> Templates
@@ -105,7 +105,7 @@ export function Sidebar() {
           <FaPlus />
         </Button>
       </div>
-    </div>
+    </Link>
   )
 
   return (

@@ -15,6 +15,7 @@ import { ColorPicker } from '@/components/services/ColorPicker';
 import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
 import { ImageUploadModal } from '@/components/services/ImageUploadModal';
 import { TableInsertModal } from '@/components/services/TableInsertModal';
+import { MediaLibraryProModal } from '@/components/media/MediaLibraryProModal';
 
 import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaHighlighter, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaPhotoVideo } from 'react-icons/fa';
 import { BsBoxSeamFill } from "react-icons/bs";
@@ -22,6 +23,7 @@ import { BsBoxSeamFill } from "react-icons/bs";
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
 
 interface EditorToolbarProps {
+  plan: string;
   editor: any;
   document?: any;
   documentId: string;
@@ -29,7 +31,7 @@ interface EditorToolbarProps {
   onAIComplete?: (originalText: string, result: string, action: string) => void;
 }
 
-export function EditorToolbar({ editor, document, documentId, onAIStart, onAIComplete }: EditorToolbarProps) {
+export function EditorToolbar({ plan, editor, document, documentId, onAIStart, onAIComplete }: EditorToolbarProps) {
   const { settings } = useEditorSettings();
   const [headingLevel, setHeadingLevel] = useState('Paragraph');
   const [tableModalOpen, setTableModalOpen] = useState(false);
@@ -287,7 +289,7 @@ export function EditorToolbar({ editor, document, documentId, onAIStart, onAICom
             title="Media Library"
             onClick={() => {
               setMediaLibraryOpen(true);
-              toast('📚 Manage your media library', {
+              toast('Manage your media 📚', {
                 icon: '💡',
                 duration: 2000,
               });
@@ -375,21 +377,28 @@ export function EditorToolbar({ editor, document, documentId, onAIStart, onAICom
         onClose={() => setTableModalOpen(false)}
       />
 
-      <MediaLibraryModal
-        isOpen={mediaLibraryOpen}
-        onClose={() => setMediaLibraryOpen(false)}
-        documentId={documentId}
-        documentTitle={document.title}
-        editor={editor}
-      />
-
-      {/* <MediaLibraryModal
-        isOpen={mediaLibraryOpen}
-        onClose={() => setMediaLibraryOpen(false)}
-        documentId={documentId}
-        documentTitle={document.title} // ✅ ADD THIS
-        editor={editor}
-      /> */}
+      {plan === "Basic" ? (
+        <>
+          <MediaLibraryModal
+            isOpen={mediaLibraryOpen}
+            onClose={() => setMediaLibraryOpen(false)}
+            documentId={documentId}
+            documentTitle={document.title}
+            editor={editor}
+          />
+        </>
+      ) : (
+        <>
+          <MediaLibraryProModal
+            isOpen={mediaLibraryOpen}
+            onClose={() => setMediaLibraryOpen(false)}
+            documentId={documentId}
+            documentTitle={document.title}
+            collaborators={document.collaborators}
+            editor={editor}
+          />
+        </>)
+      }
     </>
   );
 }
