@@ -203,17 +203,17 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       setProviderReady(false);
       console.log('🔴 [Hocuspocus] DISCONNECT', error);
     };
-    const onAuthFailed = ({ reason }: any) => {
-      setConnectionStatus('Auth Failed');
-      setProviderReady(false);
-      console.warn('⚠️ [Hocuspocus] AUTH FAILED', reason);
-      toast.error(`Authentication failed: ${reason}`);
-    };
+    // const onAuthFailed = ({ reason }: any) => {
+    //   setConnectionStatus('Auth Failed');
+    //   setProviderReady(false);
+    //   console.warn('⚠️ [Hocuspocus] AUTH FAILED', reason);
+    //   toast.error(`Authentication failed: ${reason}`);
+    // };
 
     provider.on('connect', onConnect);
     provider.on('synced', onSynced);
     provider.on('disconnect', onDisconnect);
-    provider.on('authenticationFailed', onAuthFailed);
+    // provider.on('authenticationFailed', onAuthFailed);
 
     return () => {
       // cleanup listeners and destroy provider/ydoc safely
@@ -221,7 +221,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         provider.off('connect', onConnect);
         provider.off('synced', onSynced);
         provider.off('disconnect', onDisconnect);
-        provider.off('authenticationFailed', onAuthFailed);
+        // provider.off('authenticationFailed', onAuthFailed);
       } catch (e) { /* ignore */ }
       try { provider.destroy(); } catch (e) { /* ignore */ }
       try { ydoc.destroy(); } catch (e) { /* ignore */ }
