@@ -117,7 +117,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
     // create ydoc and provider synchronously (client-only)
     const _ydoc = new Y.Doc();
     const wsUrl = process.env.NEXT_PUBLIC_HOCUSPOCUS_URL || 'ws://localhost:1234';
-    const urlWithToken = `${wsUrl}?token=${encodeURIComponent(token || '')}?userId=${user?._id}`;
+    const urlWithToken = `${wsUrl}?token=${encodeURIComponent(token || '')}&userId=${user?._id}`;
 
     console.log('🔗 Connecting to:', wsUrl);
     console.log('🔑 Using token:', token?.substring(0, 20) + '...');
@@ -139,10 +139,10 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       onDisconnect: ({ error }: any) => {
         console.log('🔴 [Hocuspocus] onDisconnect', 'color: red', error);
       },
-      onAuthenticationFailed: ({ reason }: any) => {
-        console.info('🔍 Token length:', token?.length);
-        console.warn('⚠️ [Hocuspocus] onAuthenticationFailed:', reason);
-      },
+      // onAuthenticationFailed: ({ reason }: any) => {
+      //   console.info('🔍 Token length:', token?.length);
+      //   console.warn('⚠️ [Hocuspocus] onAuthenticationFailed:', reason);
+      // },
       onStatus: ({ status }: any) => {
         console.log('🗄️ [Hocuspocus] Status:', status);
       },
