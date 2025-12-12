@@ -116,14 +116,15 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
   const { provider, ydoc } = useMemo(() => {
     // create ydoc and provider synchronously (client-only)
     const _ydoc = new Y.Doc();
+    
     const wsUrl = process.env.NEXT_PUBLIC_HOCUSPOCUS_URL || 'ws://localhost:1234';
-    const urlWithToken = `${wsUrl}?token=${encodeURIComponent(token || '')}&userId=${user?._id}`;
+    const urlWithUserId = `${wsUrl}?userId=${user?._id}`;
 
     console.log('🔗 Connecting to:', wsUrl);
     console.log('🔑 Using token:', token?.substring(0, 20) + '...');
 
     const _provider = new HocuspocusProvider({
-      url: `${urlWithToken}`,
+      url: `${urlWithUserId}`,
       name: docData._id,
       document: _ydoc,
 
@@ -139,10 +140,6 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       onDisconnect: ({ error }: any) => {
         console.log('🔴 [Hocuspocus] onDisconnect', 'color: red', error);
       },
-      // onAuthenticationFailed: ({ reason }: any) => {
-      //   console.info('🔍 Token length:', token?.length);
-      //   console.warn('⚠️ [Hocuspocus] onAuthenticationFailed:', reason);
-      // },
       onStatus: ({ status }: any) => {
         console.log('🗄️ [Hocuspocus] Status:', status);
       },
@@ -200,20 +197,13 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
     };
     const onDisconnect = ({ error }: any) => {
       setConnectionStatus(error ? 'Error' : 'Disconnected');
-      setProviderReady(true);
+      setProviderReady(false);
       console.log('🔴 [Hocuspocus] DISCONNECT', error);
     };
-    // const onAuthFailed = ({ reason }: any) => {
-    //   setConnectionStatus('Auth Failed');
-    //   setProviderReady(false);
-    //   console.warn('⚠️ [Hocuspocus] AUTH FAILED', reason);
-    //   toast.error(`Authentication failed: ${reason}`);
-    // };
 
     provider.on('connect', onConnect);
     provider.on('synced', onSynced);
     provider.on('disconnect', onDisconnect);
-    // provider.on('authenticationFailed', onAuthFailed);
 
     return () => {
       // cleanup listeners and destroy provider/ydoc safely
@@ -221,13 +211,12 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
         provider.off('connect', onConnect);
         provider.off('synced', onSynced);
         provider.off('disconnect', onDisconnect);
-        // provider.off('authenticationFailed', onAuthFailed);
       } catch (e) { /* ignore */ }
       try { provider.destroy(); } catch (e) { /* ignore */ }
       try { ydoc.destroy(); } catch (e) { /* ignore */ }
       providerRef.current = null;
       ydocRef.current = null;
-      setProviderReady(true);
+      setProviderReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [provider, ydoc]);

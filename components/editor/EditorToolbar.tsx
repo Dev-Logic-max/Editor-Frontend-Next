@@ -75,11 +75,12 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
     tap: { scale: 0.92, transition: { duration: 0.1 } },
   };
 
-  const IconButton = ({ onClick, active, title, icon: Icon, disabled = false }: {
+  const IconButton = ({ onClick, active, title, icon: Icon, custom, disabled = false }: {
     onClick: () => void;
     active?: boolean;
     title: string;
     icon: any;
+    custom?: string;
     disabled?: boolean;
   }) => (
     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
@@ -96,7 +97,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           onClick();
         }}
         title={title}
-        className={`p-2 rounded-md transition-all ${active ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-300' : 'hover:bg-gray-100 text-gray-700'}`}
+        className={`p-2 rounded-md transition-all ${active ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-300' : 'hover:bg-gray-100 text-gray-700'} ${custom}`}
       >
         <Icon />
       </Button>
@@ -353,7 +354,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
               editor.chain().focus().clearNodes().unsetAllMarks().run()
             }
           />
-          <IconButton icon={FaPrint} title="Print" onClick={handlePrint} />
+          <IconButton icon={FaPrint} title="Print" custom="hidden lg:block" onClick={handlePrint} />
           <IconButton icon={FaDownload} title="Download HTML" onClick={handleDownload} />
         </div>
       </div>

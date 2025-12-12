@@ -7,7 +7,7 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Header />
-      <main className="flex container mx-auto px-4 py-8">{children}</main>
+      <main className="flex container mx-auto">{children}</main>
       <Footer />
     </div>
   );

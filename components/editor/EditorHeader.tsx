@@ -59,16 +59,16 @@ export function EditorHeader({ editor, title, onTitleChange, document, activeUse
   };
 
   return (
-    <div className={`flex flex-col md:flex-row justify-between items-center gap-3 ${layout === EditorLayout.Document ? '' : 'px-3 py-2 border-b'}`}>
+    <div className={`flex flex-row justify-between items-center gap-3 ${layout === EditorLayout.Document ? '' : 'px-3 py-2 border-b'}`}>
       {/* Document Title */}
       <Input
         value={title}
         onChange={handleTitleChange}
         placeholder="Document Title"
-        className={`max-w-md md:order-1 order-2 ${layout === EditorLayout.Document ? 'border-none shadow-none text-3xl! font-bold' : ''}`}
+        className={`max-w-fit ${layout === EditorLayout.Document ? 'border-none shadow-none text-3xl! font-bold px-1 md:px-2 lg:px-3' : ''}`}
       />
 
-      <div className={`flex items-center ms-auto order-1 md:order-2 ${hasCollaborators && 'gap-3'}`}>
+      <div className={`flex items-center ms-auto ${hasCollaborators && 'gap-3'}`}>
         {isCreator && layout === EditorLayout.Editor && (
           <>
             <Button size={'sm'} onClick={() => setInviteModalOpen(true)} className='shadow bg-linear-to-r from-blue-400/80 to-purple-400/80'>

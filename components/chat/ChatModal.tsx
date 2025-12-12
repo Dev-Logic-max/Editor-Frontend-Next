@@ -74,7 +74,7 @@ export function ChatModal({ chatModalOpen, documentId, collaborators, ydoc, prov
   };
 
   return (
-    <div className={`${chatModalOpen ? 'block' : 'hidden'} w-96 h-96 absolute right-4 bottom-24 z-20 border shadow-lg rounded-lg  overflow-auto`}>
+    <div className={`${chatModalOpen ? 'block' : 'hidden'} w-80 sm:w-96 h-96 absolute right-4 bottom-14 z-20 border shadow-lg rounded-lg  overflow-auto`}>
       <div className='bg-linear-to-br from-indigo-50 via-white to-purple-50'>
         <div className="flex items-center px-3 py-2 gap-3 bg-white/80 backdrop-blur rounded-t-lg border-b">
           <p className="text-xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">

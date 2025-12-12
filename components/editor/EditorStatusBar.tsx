@@ -122,17 +122,17 @@ export function EditorStatusBar({ document, saveStatus, connectionStatus, active
     return (
         <div className={`bg-gray-50 px-4 py-1 flex flex-wrap justify-between items-center gap-2 ${layout === EditorLayout.Document ? 'rounded-xl m-2 mt-4' : 'border-b'}`}>
             <span className="flex items-center gap-4 order-1">
-                <div className="flex items-center gap-1 text-xs sm:text-sm font-mono">
+                <div className="sm:flex items-center gap-1 text-xs sm:text-sm font-mono hidden">
                     <span className="hidden md:block">Status:</span>
                     <span className={getStatusColor(connectionStatus)}>{connectionStatus}</span>
                 </div>
                 <span className="hidden sm:block text-sm font-mono">Letters: <b>{letterCount}</b></span>
-                <span className="block sm:hidden relative"><PiChatCenteredTextDuotone className="w-6 h-6" />
-                    <span className="absolute text-center text-[10px] font-bold content-center w-fit px-1 rounded-full border -top-2.5 left-3.5 bg-gray-100 border-gray-400">{letterCount}</span>
+                <span className="block sm:hidden relative"><PiChatCenteredTextDuotone className="w-5 h-5" />
+                    <span className="absolute text-center text-[8px] font-bold content-center w-fit px-1 rounded-full border -top-2 left-3 bg-gray-100 border-gray-400">{letterCount}</span>
                 </span>
                 <span className="hidden sm:block text-sm font-mono">Words: <b>{wordCount}</b></span>
             </span>
-            <span className="flex items-center gap-4 order-3 md:order-2">
+            <span className="flex items-center gap-4 order-2">
                 <span className="text-sm font-sans font-medium text-shadow-lg">
                     ⏱️ {formatTimeSpent(timeSpent)}
                 </span>
@@ -142,7 +142,7 @@ export function EditorStatusBar({ document, saveStatus, connectionStatus, active
             </span>
             <div className="flex items-center gap-2 md:gap-4 order-2">
                 {activeUsers.length > 1 && (
-                    <div className="flex items-center gap-1">
+                    <div className="lg:flex items-center gap-1 hidden">
                         {activeUsers.map((u) => (
                             <div
                                 key={u.clientId}
@@ -153,11 +153,10 @@ export function EditorStatusBar({ document, saveStatus, connectionStatus, active
                         ))}
                     </div>
                 )}
-                <span className="hidden sm:block text-xs font-mono text-gray-500">Active:</span>
                 <HoverCard openDelay={100}>
                     <HoverCardTrigger asChild>
-                        <Badge className="text-xs font-mono font-bold rounded-full border border-gray-800/60 text-center text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-purple-400">
-                            <HiUsers className="text-purple-600" /> {activeUsers.length} <span className="block sm:hidden">Active</span>
+                        <Badge className="sm:flex text-xs font-mono font-bold rounded-full border border-gray-800/60 text-center text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-purple-400 hidden">
+                            <HiUsers className="text-purple-600" /> {activeUsers.length} <span>Active</span>
                         </Badge>
                     </HoverCardTrigger>
                     <HoverCardContent className="w-60">

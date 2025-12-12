@@ -49,7 +49,7 @@ export function EditorInfoBar({ document, provider, userId, lastSavedAt }: Edito
   const createdTime = formatDistanceToNow(new Date(document.createdAt), { addSuffix: true });
 
   return (
-    <div className={`text-xs text-gray-500 w-full py-1 flex flex-wrap px-2 ${layout === EditorLayout.Document ? 'gap-4 justify-end' : 'border-b justify-between'} items-center`}>
+    <div className={`text-xs text-gray-500 w-full py-1 flex flex-wrap px-2 md:px-4 ${layout === EditorLayout.Document ? 'gap-4 justify-between sm:justify-end' : 'border-b justify-between'} items-center`}>
       <div>
         <span>Created {createdTime}</span>
         {document.createdBy?.name && <span> by <b>{document.createdBy.name}</b></span>}

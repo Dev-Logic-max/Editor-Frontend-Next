@@ -431,7 +431,7 @@ export function AIComparisonSidebar({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 400, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed right-0 top-0 h-screen w-[420px] bg-white border-l shadow-2xl z-50 flex flex-col"
+          className="fixed right-0 top-0 h-screen w-full sm:w-[420px] bg-white border-l shadow-2xl z-50 flex flex-col"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-linear-to-r from-purple-50 to-blue-50">
@@ -446,7 +446,7 @@ export function AIComparisonSidebar({
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="grid w-full grid-cols-4 p-1 bg-gray-100 shrink-0">
+            <TabsList className="grid w-full grid-cols-4 p-1 bg-gray-50 shrink-0 rounded-none">
               <TabsTrigger value="tracking" className="text-xs">
                 <History className="h-3.5 w-3.5 mr-1" />
                 History
@@ -635,7 +635,7 @@ export function AIComparisonSidebar({
             {/* Chat Tab */}
             <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden">
               {/* Chat Header with Clear Button */}
-              <div className="px-4 py-2 border-b bg-gray-50 flex items-center justify-between shrink-0">
+              <div className="px-4 py-1 border rounded-xl mx-2 bg-gray-50 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
                   <PiRobot className="h-4 w-4 text-purple-600" />
                   <span className="text-xs font-semibold text-gray-700">Chat Assistant</span>
@@ -1019,32 +1019,6 @@ export function AIComparisonSidebar({
                         <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                         <div className="h-3 bg-gray-200 rounded w-full"></div>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {!imageLoading && generatedImages.length === 0 && (
-                  <div className="text-center py-12 text-gray-400">
-                    <ImageIcon className="h-16 w-16 mx-auto mb-3 opacity-40" />
-                    <p className="text-sm font-medium">No images generated yet</p>
-                    <p className="text-xs mt-1 mb-4">Create AI images and insert them into your document</p>
-
-                    {/* Example Prompts */}
-                    <div className="text-left max-w-sm mx-auto space-y-2">
-                      <p className="text-xs font-semibold text-gray-600 mb-2">Try these prompts:</p>
-                      {[
-                        'A futuristic office workspace with holographic displays',
-                        'Abstract geometric pattern in vibrant colors',
-                        'Minimalist logo design for tech company'
-                      ].map((example, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setImagePrompt(example)}
-                          className="block w-full text-left px-3 py-2 text-xs bg-white border rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
-                        >
-                          💡 {example}
-                        </button>
-                      ))}
                     </div>
                   </div>
                 )}
