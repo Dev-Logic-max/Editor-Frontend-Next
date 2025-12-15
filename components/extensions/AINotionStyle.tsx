@@ -112,7 +112,7 @@ export function AINotionStyle({
                 .insertContentAt(insertedPosition.current.from, originalText.current)
                 .run();
 
-            toast.error('❌ AI suggestion rejected');
+            toast('❌ AI suggestion rejected');
             onReject();
         } catch (error) {
             console.error('Error rejecting suggestion:', error);
@@ -142,7 +142,7 @@ export function AINotionStyle({
                 .setTextSelection(insertPos.from + originalContent.length)
                 .run();
 
-            toast.error('❌ AI suggestion rejected');
+            toast('❌ AI suggestion rejected');
             onReject();
         } catch (error) {
             console.error('Error rejecting suggestion:', error);

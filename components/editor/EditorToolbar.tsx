@@ -104,27 +104,6 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
     </motion.div>
   );
 
-  const addLink = () => {
-    const url = prompt('Enter URL:');
-    if (url) {
-      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-      toast.success('Link added!');
-    }
-  };
-
-  const addImage = () => {
-    const url = prompt('Enter image URL:');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
-      toast.success('Image inserted!');
-    }
-  };
-
-  const addTable = () => {
-    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
-    toast.success('Table inserted!');
-  };
-
   const openLinkModal = () => {
     setLinkModalOpen(true);
   };
@@ -191,6 +170,9 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           onAIStart={onAIStart}
           onAIComplete={onAIComplete}
         />
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
         <ToolbarEmojiPicker editor={editor} />
 

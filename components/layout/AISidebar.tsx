@@ -434,8 +434,8 @@ export function AIComparisonSidebar({
           className="fixed right-0 top-0 h-screen w-full sm:w-[420px] bg-white border-l shadow-2xl z-50 flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b bg-linear-to-r from-purple-50 to-blue-50">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-linear-to-r from-purple-50 to-blue-50">
+            <div className="flex items-center gap-3">
               <PiSparkle className="h-5 w-5 text-purple-600" />
               <h3 className="font-semibold text-gray-900">AI Assistant</h3>
             </div>
@@ -466,10 +466,10 @@ export function AIComparisonSidebar({
             </TabsList>
 
             {/* Tracking Tab */}
-            <TabsContent value="tracking" className="flex-1 overflow-y-auto p-4 pt-0 space-y-3">
+            <TabsContent value="tracking" className="flex-1 overflow-y-auto p-3 pt-0 space-y-3">
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm font-semibold text-gray-700">AI Suggestions History</div>
-                <Badge variant="secondary" className="text-xs border border-purple-400 bg-blue-50">{history.length} total</Badge>
+                <Badge variant="secondary" className="text-[10px] border border-purple-400 bg-blue-50">{history.length}</Badge>
               </div>
 
               {history.length === 0 ? (

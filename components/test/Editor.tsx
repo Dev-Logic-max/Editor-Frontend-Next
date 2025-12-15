@@ -317,7 +317,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
           setSaveStatus('Saved');
         } catch (err) {
           setSaveStatus('Error');
-          toast.error('⚠️ Failed to save 📄');
+          toast.error('Failed to save 📄');
         }
       });
     },
