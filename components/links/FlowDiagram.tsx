@@ -1,6 +1,6 @@
 import { Node } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
-import FlowDiagramComponent from '@/components/interface/FlowDiagramComponent';
+import FlowDiagramComponent from '@/components/links/FlowDiagramComponent';
 
 export const FlowDiagram = Node.create({
   name: 'flowDiagram',

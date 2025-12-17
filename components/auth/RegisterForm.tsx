@@ -69,18 +69,18 @@ export function RegisterForm() {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                        className="inline-flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-linear-to-br from-purple-500 to-blue-500 rounded-2xl shadow-lg"
+                        className="inline-flex items-center justify-center sm:w-16 sm:h-16 w-14 h-14 mx-auto mb-4 bg-linear-to-br from-purple-500 to-blue-500 rounded-2xl shadow-lg"
                     >
                         <RiUserAddLine className="w-8 h-8 text-white" />
                     </MotionDiv>
-                    <h1 className="text-3xl font-bold bg-linear-to-r from-blue-500 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
+                    <h1 className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-blue-500 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
                         Create Account
                     </h1>
-                    <p className="text-gray-600 mt-2">Join Collab Sphere today</p>
+                    <p className="text-gray-600 font-semibold mt-2 text-sm sm:text-base">Join Collab Sphere today</p>
                 </div>
 
                 {/* Form */}
-                <div className="px-8 py-6">
+                <div className="p-6 sm:px-8 py-6">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -200,14 +200,14 @@ export function RegisterForm() {
                         type="button"
                         variant="outline"
                         onClick={handleGoogleSignUp}
-                        className="w-full h-10 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all font-semibold"
+                        className="w-full h-10 text-xs sm:text-sm border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all font-semibold"
                     >
                         <GooogleIcon className="mr-2" />
                         Sign up with Google
                     </Button>
 
                     {/* Sign In Link */}
-                    <p className="mt-6 text-center text-gray-600">
+                    <p className="mt-6 text-center text-sm sm:text-base text-gray-600">
                         Already have an account?{' '}
                         <Link href="/login" className="text-purple-600 hover:text-purple-700 font-semibold hover:underline">
                             Sign in

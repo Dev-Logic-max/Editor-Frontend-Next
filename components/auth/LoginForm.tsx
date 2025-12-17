@@ -111,15 +111,15 @@ export function LoginForm() {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                        className="inline-flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-linear-to-br from-purple-400 to-pink-400 rounded-2xl shadow-lg"
+                        className="inline-flex items-center justify-center sm:w-16 sm:h-16 w-14 h-14 mx-auto mb-4 bg-linear-to-br from-purple-400 to-pink-400 rounded-2xl shadow-lg"
                     >
                         <RiLoginCircleLine className="w-8 h-8 text-white" />
                     </MotionDiv>
-                    <h1 className="text-3xl font-bold bg-linear-to-r from-purple-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
+                    <h1 className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-purple-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
                         Collab Sphere
                     </h1>
                     <p className="text-gray-600 mt-2 h-6 flex items-center justify-center">
-                        <span className="inline-flex items-center font-semibold ml-1">
+                        <span className="inline-flex items-center font-semibold text-sm sm:text-base ml-1">
                             {displayedText}
                             <span className="inline-block w-0.5 h-4 bg-purple-600 ml-0.5 animate-pulse"></span>
                         </span>
@@ -127,7 +127,7 @@ export function LoginForm() {
                 </div>
 
                 {/* Form */}
-                <div className="px-8 py-6">
+                <div className="p-6 sm:px-8 py-6">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <FormField
@@ -216,14 +216,14 @@ export function LoginForm() {
                         type="button"
                         variant="outline"
                         onClick={handleGoogleSignIn}
-                        className="w-full border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all font-semibold"
+                        className="w-full text-xs sm:text-sm border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all font-semibold"
                     >
                         <GooogleIcon className="mr-2" />
                         Sign in with Google
                     </Button>
 
                     {/* Sign Up Link */}
-                    <p className="mt-6 text-center text-gray-600">
+                    <p className="mt-6 text-sm sm:text-base text-center text-gray-600">
                         Don't have an account?{' '}
                         <Link href="/register" className="text-purple-600 hover:text-purple-700 font-semibold hover:underline">
                             Sign up

@@ -2,20 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+
 import { X, Mail, Send, UserPlus, Crown, User, Shield, Trash2, Search, Bell, Copy, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ManageCollaboratorIcon } from '@/components/icons/Document';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { sendInvite } from '@/lib/api/requests';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+
 import { getDocument, updateDocument } from '@/lib/api/documents';
-import toast from 'react-hot-toast';
-import { ManageCollaboratorIcon } from '../icons/Document';
+import { sendInvite } from '@/lib/api/requests';
 
 interface Collaborator {
   _id: string;

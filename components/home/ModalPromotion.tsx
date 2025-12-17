@@ -42,7 +42,7 @@ export function ModalPromotion() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+              className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full h-fit max-h-[90vh] overflow-hidden"
             >
               {/* Close Button */}
               <button

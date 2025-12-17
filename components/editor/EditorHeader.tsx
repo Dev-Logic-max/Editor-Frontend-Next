@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import { AIComparisonSidebar } from '@/components/layout/AISidebar';
-import { InviteModal } from '@/components/links/InviteCollaboratorModal';
+import { InviteModal } from '@/components/connection/InviteCollaboratorModal';
 
 import { TbLayoutSidebarLeftCollapse } from "react-icons/tb";
 
