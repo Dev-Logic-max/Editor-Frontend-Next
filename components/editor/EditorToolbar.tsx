@@ -21,6 +21,8 @@ import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlign
 import { BsBoxSeamFill } from "react-icons/bs";
 
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
+import { Network } from 'lucide-react';
+import { FlowDiagramModal } from '../interface/FlowDiagramModal';
 
 interface EditorToolbarProps {
   plan: string;
@@ -38,6 +40,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [flowModalOpen, setFlowModalOpen] = useState(false);
 
   const layout = settings.appearance.layout;
 
@@ -232,6 +235,11 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             active={editor.isActive('codeBlock')}
           />
+          <IconButton
+            icon={Network}
+            title="Insert Flow Diagram"
+            onClick={() => setFlowModalOpen(true)}
+          />
         </div>
 
         {/* Divider */}
@@ -382,6 +390,38 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           />
         </>)
       }
+
+      <FlowDiagramModal
+        isOpen={flowModalOpen}
+        onClose={() => setFlowModalOpen(false)}
+        onSave={(nodes: FlowNode[], edges: FlowEdge[]) => {
+          const flowId = `flow-${Date.now()}`;
+
+          // Insert a visual reference block
+          editor.chain().focus().insertContent(`
+      <div class="flow-reference" style="margin: 16px 0; padding: 16px; border: 2px dashed #3b82f6; border-radius: 12px; background: linear-gradient(to right, #eff6ff, #faf5ff);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="padding: 12px; background: linear-gradient(135deg, #3b82f6, #a855f7); border-radius: 8px; color: white;">
+            📊
+          </div>
+          <div>
+            <strong>Flow Diagram</strong>
+            <p style="margin: 4px 0 0 0; font-size: 14px; color: #666;">
+              ${nodes.length} nodes • ${edges.length} connections
+            </p>
+          </div>
+        </div>
+      </div>
+    `).run();
+
+          // Store flow data
+          const flowData = { id: flowId, nodes, edges, createdAt: new Date().toISOString() };
+          const existingFlows = JSON.parse(localStorage.getItem(`flows-${documentId}`) || '[]');
+          localStorage.setItem(`flows-${documentId}`, JSON.stringify([...existingFlows, flowData]));
+
+          toast.success('✅ Flow diagram inserted!');
+        }}
+      />
     </>
   );
 }

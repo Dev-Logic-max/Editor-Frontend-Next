@@ -62,9 +62,9 @@ export function RegisterForm() {
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="w-full max-w-md"
         >
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden relative">
                 {/* Header */}
-                <div className="p-6 text-center bg-blue-50">
+                <div className="pt-6 pb-4 text-center bg-blue-50">
                     <MotionDiv
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -73,16 +73,16 @@ export function RegisterForm() {
                     >
                         <RiUserAddLine className="w-8 h-8 text-white" />
                     </MotionDiv>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    <h1 className="text-3xl font-bold bg-linear-to-r from-blue-500 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
                         Create Account
                     </h1>
-                    <p className="text-gray-600">Join Collab Sphere today</p>
+                    <p className="text-gray-600 mt-2">Join Collab Sphere today</p>
                 </div>
 
                 {/* Form */}
                 <div className="px-8 py-6">
                     <Form {...form}>
-                        <div className="space-y-4">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -171,7 +171,7 @@ export function RegisterForm() {
                                 type="submit" 
                                 disabled={loading}
                                 onClick={form.handleSubmit(onSubmit)}
-                                className={`w-full h-10 bg-linear-to-r ${loading ? 'from-purple-500 to-indigo-500' : 'from-purple-400 to-indigo-400'}  hover:to-indigo-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all`}
+                                className={`w-full h-10 bg-linear-to-r from-purple-400 to-indigo-400 hover:to-indigo-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all`}
                             >
                                 {loading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -182,7 +182,7 @@ export function RegisterForm() {
                                     'Create Account'
                                 )}
                             </Button>
-                        </div>
+                        </form>
                     </Form>
 
                     {/* Divider */}
