@@ -21,7 +21,7 @@ import {
   BsLightbulb,
 } from 'react-icons/bs';
 import { Loader2, Wand2, Info, TrendingDown, TrendingUp, Settings } from 'lucide-react';
-
+import { toast } from 'react-hot-toast';
 /* -------------------------------------------------
    Types
 ------------------------------------------------- */
@@ -61,6 +61,8 @@ export function AIAnalysisModal({
   const [humanizedContent, setHumanizedContent] = useState('');
   const [originalContent, setOriginalContent] = useState('');
   const [showHumanized, setShowHumanized] = useState(false);
+
+  const HUMANIZE_CHAR_LIMIT = 5000;
 
   /* ---------- Loading flag ---------- */
   const isLoading = isOpen && showAnalysisTab && !analysisResult;
@@ -112,7 +114,7 @@ export function AIAnalysisModal({
     if (isOpen && editor) {
       const selection = editor.state.selection;
       const { from, to } = selection;
-      
+
       // If text is selected, use only that selection
       if (from !== to) {
         const selectedText = editor.state.doc.textBetween(from, to, ' ');
@@ -121,7 +123,7 @@ export function AIAnalysisModal({
         // Otherwise use full document text
         setOriginalContent(editor.getText());
       }
-      
+
       // Reset humanized content when modal opens
       setHumanizedContent('');
       setShowHumanized(false);
@@ -161,15 +163,19 @@ export function AIAnalysisModal({
   /* ---------- Humanize Content ---------- */
   const handleHumanizeContent = async () => {
     if (!editor) return;
-    
+
+    // Check character limit
+    if (originalContent.length > HUMANIZE_CHAR_LIMIT) {
+      toast.error(`Cannot humanize content longer than ${HUMANIZE_CHAR_LIMIT} characters.`);
+      return;
+    }
+
     setIsRemoving(true);
-    
+
     try {
       const response = await fetch('/api/remove-content', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content: originalContent,
           model: selectedModel,
@@ -177,17 +183,14 @@ export function AIAnalysisModal({
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to humanize content');
-      }
+      if (!response.ok) throw new Error('Failed to humanize content');
 
       const data = await response.json();
-      
       if (data.humanizedContent) {
         setHumanizedContent(data.humanizedContent);
         setShowHumanized(true);
       }
-      
+
     } catch (error) {
       console.error('Error humanizing content:', error);
       setHumanizedContent('Failed to humanize content. Please try again.');
@@ -196,18 +199,19 @@ export function AIAnalysisModal({
     }
   };
 
+
   /* ---------- Accept humanized content ---------- */
   const handleAccept = () => {
     if (!editor || !humanizedContent) return;
-    
+
     const selection = editor.state.selection;
     const { from, to } = selection;
-    
+
     // Convert plain text to HTML with proper formatting
     const formatContent = (text: string) => {
       // Split by double newlines for paragraphs
       const paragraphs = text.split(/\n\n+/);
-      
+
       return paragraphs
         .map(para => {
           // Handle single newlines within paragraphs as line breaks
@@ -216,9 +220,9 @@ export function AIAnalysisModal({
         })
         .join('');
     };
-    
+
     const formattedContent = formatContent(humanizedContent);
-    
+
     // If text was selected, replace only that selection
     if (from !== to && originalContent !== editor.getText()) {
       editor.chain().focus().deleteRange({ from, to }).insertContent(formattedContent).run();
@@ -226,7 +230,7 @@ export function AIAnalysisModal({
       // Replace entire document
       editor.commands.setContent(formattedContent);
     }
-    
+
     onClose();
   };
 
@@ -403,9 +407,9 @@ export function AIAnalysisModal({
                       {analysisResult.suggestions.map((s, i) => (
                         <div
                           key={i}
-                          className="flex items-start gap-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border-2 border-white shadow-sm hover:shadow-md transition-shadow"
+                          className="flex items-start gap-4 p-4 bg-linear-to-r from-amber-50 to-orange-50 rounded-xl border-2 border-white shadow-sm hover:shadow-md transition-shadow"
                         >
-                          <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md">
+                          <span className="shrink-0 w-8 h-8 bg-linear-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md">
                             {i + 1}
                           </span>
                           <p className="text-gray-700 font-medium pt-1">{s}</p>
@@ -429,24 +433,34 @@ export function AIAnalysisModal({
                   <textarea
                     value={originalContent}
                     readOnly
-                    className="w-full h-48 p-4 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-700 resize-none focus:outline-none"
+                    className={`w-full h-48 p-4 border-2 rounded-xl bg-gray-50 text-gray-700 resize-none focus:outline-none
+                    ${originalContent.length > HUMANIZE_CHAR_LIMIT ? 'border-red-500' : 'border-gray-200'}`}
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     {originalContent.split(' ').length} words
                   </p>
+                  <p className={`text-xs mt-1 font-medium ${originalContent.length > HUMANIZE_CHAR_LIMIT ? 'text-red-600' : 'text-gray-500'}`}>
+                    {originalContent.length}/{HUMANIZE_CHAR_LIMIT} characters
+                    {originalContent.length > HUMANIZE_CHAR_LIMIT && ' - Limit exceeded!'}
+                  </p>
+                        {originalContent.length > HUMANIZE_CHAR_LIMIT && (
+        <p className="text-sm text-gray-600 mt-1">
+          Character limit exceeded! You can also select a snippet to humanize a particular part of your text.
+        </p>
+      )}
                 </div>
 
                 {/* Humanize Button */}
                 {!showHumanized && (
                   <button
-                    disabled={isRemoving}
+                    disabled={isRemoving || originalContent.length > HUMANIZE_CHAR_LIMIT}
                     onClick={handleHumanizeContent}
                     className="w-full py-4 rounded-xl font-bold text-lg
-                             bg-gradient-to-r from-purple-600 to-indigo-600 
-                             text-white flex items-center justify-center gap-3 
-                             shadow-lg hover:shadow-xl hover:from-purple-700 hover:to-indigo-700
-                             transition-all duration-300 transform hover:scale-[1.02]
-                             disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                   bg-gradient-to-r from-purple-600 to-indigo-600 
+                   text-white flex items-center justify-center gap-3 
+                   shadow-lg hover:shadow-xl hover:from-purple-700 hover:to-indigo-700
+                   transition-all duration-300 transform hover:scale-[1.02]
+                   disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     {isRemoving ? (
                       <>
@@ -485,9 +499,9 @@ export function AIAnalysisModal({
                       <button
                         onClick={handleReject}
                         className="py-3 rounded-xl font-semibold
-                                 bg-gray-100 text-gray-700
-                                 hover:bg-gray-200
-                                 transition-all duration-200"
+                     bg-gray-100 text-gray-700
+                     hover:bg-gray-200
+                     transition-all duration-200"
                       >
                         Reject
                       </button>
@@ -495,20 +509,20 @@ export function AIAnalysisModal({
                         onClick={handleTryBetter}
                         disabled={isRemoving}
                         className="py-3 rounded-xl font-semibold
-                                 bg-amber-100 text-amber-700
-                                 hover:bg-amber-200
-                                 transition-all duration-200
-                                 disabled:opacity-50"
+                     bg-amber-100 text-amber-700
+                     hover:bg-amber-200
+                     transition-all duration-200
+                     disabled:opacity-50"
                       >
                         {isRemoving ? 'Processing...' : 'Try Better'}
                       </button>
                       <button
                         onClick={handleAccept}
                         className="py-3 rounded-xl font-semibold
-                                 bg-gradient-to-r from-green-600 to-emerald-600
-                                 text-white
-                                 hover:from-green-700 hover:to-emerald-700
-                                 transition-all duration-200 transform hover:scale-[1.02]"
+                     bg-gradient-to-r from-green-600 to-emerald-600
+                     text-white
+                     hover:from-green-700 hover:to-emerald-700
+                     transition-all duration-200 transform hover:scale-[1.02]"
                       >
                         Accept
                       </button>
@@ -518,24 +532,24 @@ export function AIAnalysisModal({
               </div>
             </TabsContent>
 
+
             {/* MODEL SETTINGS TAB */}
             <TabsContent value="settings" className="py-6">
               <div className="space-y-6">
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-white shadow-lg">
+                <div className="p-6 rounded-2xl bg-linear-to-br from-purple-50 to-indigo-50 border-2 border-white shadow-lg">
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <Settings className="w-5 h-5 text-purple-600" />
                     Select AI Model
                   </h3>
-                  
+
                   <div className="grid gap-3">
                     {availableModels.map((model) => (
                       <label
                         key={model.id}
-                        className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                          selectedModel === model.id
+                        className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedModel === model.id
                             ? 'bg-white border-purple-500 shadow-md'
                             : 'bg-white/50 border-gray-200 hover:border-purple-300'
-                        }`}
+                          }`}
                       >
                         <input
                           type="radio"
