@@ -9,8 +9,8 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 
-import { PiSparkle,  PiMagicWandBold,  PiNotePencilBold,  PiArrowsOutBold, PiCheckCircleBold,  PiTranslateBold,  PiBriefcaseBold, PiSmileyBold, PiListBulletsBold, PiLightbulbBold, PiPencilSimpleLineBold, PiChatCenteredTextBold, PiArrowsInSimpleBold } from 'react-icons/pi';
-import { ChevronDown } from 'lucide-react';
+import { PiSparkle, PiMagicWandBold, PiCheckCircleBold, PiArrowsOutBold, PiTranslateBold, PiBriefcaseBold, PiSmileyBold, PiListBulletsBold, PiLightbulbBold, PiPencilSimpleLineBold, PiChatCenteredTextBold, PiArrowsInSimpleBold } from 'react-icons/pi';
+import { ScanSearch } from 'lucide-react';
 
 import { getAIService } from '@/lib/services/ai-service';
 
@@ -18,6 +18,7 @@ interface AIMenuProps {
   editor: Editor | null;
   onAIStart?: (originalText: string, action: string) => void;
   onAIComplete?: (originalText: string, result: string, action: string) => void;
+  onAnalyzeContent?: () => void;
   compact?: boolean;
 }
 
@@ -25,12 +26,13 @@ export interface AIAction {
   id: string;
   label: string;
   icon: any;
-  action: (text: string) => Promise<string>;
+  action: (text: string) => Promise<string> | void;
   color: string;
   description: string;
+  requiresSelection?: boolean;
 }
 
-export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIMenuProps) {
+export function AIMenu({ editor, onAIStart, onAIComplete, onAnalyzeContent, compact = false }: AIMenuProps) {
   const [aiLoading, setAiLoading] = useState(false);
   const [activeAiAction, setActiveAiAction] = useState<string | null>(null);
 
@@ -40,7 +42,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
     return editor.state.doc.textBetween(from, to, ' ');
   };
 
-  // 🎨 AI Actions with Better Icons
+  // 🎨 AI Actions - Only text transformation actions (removed analyze)
   const aiActions: AIAction[] = [
     {
       id: 'improve',
@@ -49,6 +51,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().improveText(text),
       color: 'text-purple-600',
       description: 'Enhance clarity and quality',
+      requiresSelection: true,
     },
     {
       id: 'grammar',
@@ -57,6 +60,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().fixGrammar(text),
       color: 'text-green-600',
       description: 'Correct spelling and grammar',
+      requiresSelection: true,
     },
     {
       id: 'summarize',
@@ -65,6 +69,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().summarize(text),
       color: 'text-blue-600',
       description: 'Create a brief summary',
+      requiresSelection: true,
     },
     {
       id: 'expand',
@@ -73,6 +78,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().expandText(text),
       color: 'text-indigo-600',
       description: 'Add more details',
+      requiresSelection: true,
     },
     {
       id: 'simplify',
@@ -81,6 +87,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().changeTone(text, 'casual'),
       color: 'text-teal-600',
       description: 'Make it easier to understand',
+      requiresSelection: true,
     },
     {
       id: 'formal',
@@ -89,6 +96,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().changeTone(text, 'formal'),
       color: 'text-gray-700',
       description: 'Professional tone',
+      requiresSelection: true,
     },
     {
       id: 'emojify',
@@ -97,6 +105,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().expandText(`Add relevant emojis to this text: ${text}`),
       color: 'text-yellow-600',
       description: 'Make it fun with emojis',
+      requiresSelection: true,
     },
     {
       id: 'bullets',
@@ -105,6 +114,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().expandText(`Convert this to a bullet point list: ${text}`),
       color: 'text-orange-600',
       description: 'Organize as bullet points',
+      requiresSelection: true,
     },
     {
       id: 'elaborate',
@@ -113,6 +123,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().expandText(`Explain this in more detail: ${text}`),
       color: 'text-amber-600',
       description: 'Provide more explanation',
+      requiresSelection: true,
     },
     {
       id: 'translate',
@@ -121,6 +132,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().translate(text, 'es'),
       color: 'text-pink-600',
       description: 'Translate to another language',
+      requiresSelection: true,
     },
     {
       id: 'continue',
@@ -129,6 +141,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       action: (text) => getAIService().complete(text),
       color: 'text-violet-600',
       description: 'AI continues your text',
+      requiresSelection: true,
     },
   ];
 
@@ -157,7 +170,9 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
       const result = await aiAction.action(selectedText);
       
       // Notify parent with result (for comparison sidebar)
-      onAIComplete?.(selectedText, result, aiAction.label);
+      if (result) {
+        onAIComplete?.(selectedText, result as string, aiAction.label);
+      }
       
       toast.success(`✨ ${aiAction.label} completed!`);
     } catch (error: any) {
@@ -166,6 +181,13 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
     } finally {
       setAiLoading(false);
       setActiveAiAction(null);
+    }
+  };
+
+  // Handle AI Content Analysis separately
+  const handleAnalyze = () => {
+    if (onAnalyzeContent) {
+      onAnalyzeContent();
     }
   };
 
@@ -182,19 +204,40 @@ export function AIMenu({ editor, onAIStart, onAIComplete, compact = false }: AIM
             className={`${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} mr-1 ${aiLoading ? 'animate-spin' : ''} text-purple-600`} 
           />
           <span className="text-purple-600 font-semibold text-sm">AI</span>
-          {/* {!compact && <ChevronDown className="h-3 w-3 ml-1 text-purple-600" />} */}
           {aiLoading && (
             <span className="absolute -top-1 -right-1 w-2 h-2 bg-purple-500 rounded-full animate-ping" />
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64 h-80">
+      <DropdownMenuContent align="start" className="w-64 max-h-96 overflow-y-auto">
         <DropdownMenuLabel className="flex items-center gap-2">
           <PiSparkle className="h-4 w-4 text-purple-600" />
           <span>AI Writing Tools</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         
+        {/* AI Content Analysis - Special Item */}
+        <DropdownMenuItem
+          onClick={handleAnalyze}
+          className="cursor-pointer py-2.5 focus:bg-gray-50 bg-purple-50/50"
+        >
+          <div className="flex items-start gap-3 w-full">
+            <ScanSearch className="h-5 w-5 mt-0.5 shrink-0 text-purple-600" />
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm flex items-center gap-2">
+                AI Content Analysis
+                <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold">
+                  PRO
+                </span>
+              </div>
+              <div className="text-xs text-gray-500 mt-0.5">Detect AI-generated content</div>
+            </div>
+          </div>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        
+        {/* Text Transformation Actions */}
         {aiActions.map((item) => (
           <DropdownMenuItem
             key={item.id}

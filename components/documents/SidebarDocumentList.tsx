@@ -11,6 +11,7 @@ import { SettingsDocumentModal } from '@/components/documents/SettingsDocumentMo
 import { DeleteDocumentModal } from '@/components/documents/DeleteDocumentModal';
 import { EditDocumentModal } from '@/components/documents/EditDocumentModal';
 import { InviteModal } from '@/components/links/InviteCollaboratorModal';
+import { AIAnalysisModal } from '@/components/documents/AIAnalysisModal';
 import { Badge } from '@/components/ui/badge';
 
 import { HiOutlineDocumentDuplicate, HiOutlineUserGroup } from 'react-icons/hi2';
@@ -20,10 +21,12 @@ import { RiDeleteBin6Line } from 'react-icons/ri';
 import { FaEllipsisV } from 'react-icons/fa';
 import { LuSettings } from 'react-icons/lu';
 import { TbEdit } from "react-icons/tb";
+import { BsStars } from "react-icons/bs";
 
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/hooks/useAuth';
+import { getDocument } from '@/lib/api/documents';
 
 export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean }) {
   const router = useRouter();
@@ -39,6 +42,9 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [modelModalOpen, setModelModalOpen] = useState(false);
+  const [analyzingContent, setAnalyzingContent] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   const layout = settings.appearance?.layout;
 
@@ -55,6 +61,76 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
       }
     }
   };
+
+// ---- inside SidebarDocumentList -----------------------------------------
+const handleAnalyzeContent = async (documentId: string) => {
+  // 1️⃣  Open the modal immediately (so the user sees the loading UI)
+  setModelModalOpen(true);          // <‑‑ NEW – open now
+  setAnalysisResult(null);          // reset any previous result
+
+  setAnalyzingContent(true);        // keep the button spinner state
+
+  try {
+    // ---- fetch the document ------------------------------------------------
+    const response = await getDocument(documentId);
+    const documentData = response.data.data;   // adjust if your API shape differs
+
+    if (!documentData) {
+      toast.error('Document not found');
+      return;
+    }
+    if (!documentData.content) {
+      toast.error('Document has no content to analyze');
+      return;
+    }
+
+    // ---- extract plain‑text from the Tiptap JSON ---------------------------
+    const extractText = (content: any): string => {
+      if (!content) return '';
+      if (typeof content === 'string') return content;
+
+      let txt = '';
+      if (Array.isArray(content?.content)) {
+        content.content.forEach((node: any) => {
+          if (node.type === 'text') txt += node.text || '';
+          else if (node.content) txt += extractText(node) + '\n';
+        });
+      }
+      return txt;
+    };
+
+    const textContent = extractText(documentData.content);
+
+    if (!textContent.trim()) {
+      toast.error('Document is empty');
+      return;
+    }
+
+    // ---- call the AI‑analysis endpoint ------------------------------------
+    const analyzeResponse = await fetch('/api/analyze-content', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ documentId, content: textContent }),
+    });
+
+    if (!analyzeResponse.ok) {
+      const err = await analyzeResponse.json();
+      throw new Error(err.error ?? 'Analysis failed');
+    }
+
+    const result = await analyzeResponse.json();
+
+    // 2️⃣  Store the result – the modal will automatically switch from
+    //     “loading” to the result view because `analysisResult` is no longer null.
+    setAnalysisResult(result);
+  } catch (error: any) {
+    toast.error(error.message || 'Failed to analyze content');
+    // close the modal if something went really wrong
+    setModelModalOpen(false);
+  } finally {
+    setAnalyzingContent(false);
+  }
+};
 
   if (isSidebar) {
     return (
@@ -98,6 +174,23 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
                     <HiOutlineDocumentDuplicate className="" />
                     Duplicate
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 hover:bg-cream-100 hover:text-indigo-400"
+                    onClick={() => {
+                      setSelectedDocId(doc._id);
+                      handleAnalyzeContent(doc._id); // ✅ Analyze immediately with document content
+                    }}
+                    disabled={analyzingContent}
+                  >
+                    <BsStars className={analyzingContent ? "animate-spin" : ""} />
+                    <span>{analyzingContent ? 'Analyzing...' : 'AI Content Detection'}</span>
+
+                    {/* Pro Badge */}
+                    <Badge className="ml-auto bg-linear-to-r from-purple-500 to-indigo-500 text-white text-xs">
+                      Pro
+                    </Badge>
+                  </DropdownMenuItem>
+
                   <DropdownMenuItem
                     className="flex items-center gap-2 hover:bg-cream-100 hover:text-indigo-400"
                     onClick={() => {
@@ -169,6 +262,14 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
           onClose={() => setDeleteModalOpen(false)}
           onConfirm={handleDelete}
         />
+<AIAnalysisModal
+  isOpen={modelModalOpen}
+  onClose={() => setModelModalOpen(false)}
+  analysisResult={analysisResult}
+  documentId={selectedDocId}
+  editor={null} // or your editor instance
+/>
+
       </div>
     );
   }

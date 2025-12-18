@@ -1,4 +1,5 @@
 'use client';
+// Previous AISidebar
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -16,9 +16,11 @@ import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
 import { ImageUploadModal } from '@/components/services/ImageUploadModal';
 import { TableInsertModal } from '@/components/services/TableInsertModal';
 import { MediaLibraryProModal } from '@/components/media/MediaLibraryProModal';
+import { AIAnalysisModal } from '../documents/AIAnalysisModal';
 
-import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaHighlighter, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaPhotoVideo } from 'react-icons/fa';
+import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaHighlighter, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaPhotoVideo } from 'react-icons/fa';
 import { BsBoxSeamFill } from "react-icons/bs";
+import { Wand2, Settings } from 'lucide-react';
 
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
 
@@ -38,6 +40,10 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiModalTab, setAiModalTab] = useState<'analysis' | 'humanize' | 'settings'>('humanize');
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const layout = settings.appearance.layout;
 
@@ -124,6 +130,58 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
     toast.success('Document downloaded!');
   };
 
+  // Open AIAnalysisModal with Analysis tab (triggered from AI dropdown)
+  const handleAnalyzeContent = async () => {
+    if (!editor) return;
+
+    setAnalyzing(true);
+    setAnalysisResult(null);
+    setAiModalTab('analysis');
+    setAiModalOpen(true);
+
+    try {
+      const textContent = editor.getText();
+
+      if (!textContent.trim()) {
+        throw new Error('Document is empty');
+      }
+
+      const response = await fetch('/api/analyze-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId,
+          content: textContent,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Analysis failed');
+      }
+
+      const result = await response.json();
+      setAnalysisResult(result);
+
+    } catch (error) {
+      console.error('AI analysis failed:', error);
+      toast.error('Failed to analyze content');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  // Open AIAnalysisModal with Humanize tab (triggered from toolbar)
+  const handleOpenHumanize = () => {
+    setAiModalTab('humanize');
+    setAiModalOpen(true);
+  };
+
+  // Open AIAnalysisModal with Settings tab (triggered from toolbar)
+  const handleOpenSettings = () => {
+    setAiModalTab('settings');
+    setAiModalOpen(true);
+  };
+
   console.log("Document Editor Toolbar", document)
 
   if (!editor) return null;
@@ -169,6 +227,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           editor={editor}
           onAIStart={onAIStart}
           onAIComplete={onAIComplete}
+          onAnalyzeContent={handleAnalyzeContent}
         />
 
         {/* Divider */}
@@ -338,6 +397,20 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           />
           <IconButton icon={FaPrint} title="Print" custom="hidden lg:block" onClick={handlePrint} />
           <IconButton icon={FaDownload} title="Download HTML" onClick={handleDownload} />
+          
+          {/* Humanize Content Button */}
+          <div className="relative">
+            <IconButton
+              icon={Wand2}
+              title="Humanize Content"
+              onClick={handleOpenHumanize}
+            />
+            <span className="absolute -top-1 -right-1 text-[10px] px-1.5 py-0.5
+                           rounded-full bg-gradient-to-r from-purple-500 to-indigo-500
+                           text-white font-bold">
+              PRO
+            </span>
+          </div>
         </div>
       </div>
 
@@ -358,6 +431,19 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
         editor={editor}
         isOpen={tableModalOpen}
         onClose={() => setTableModalOpen(false)}
+      />
+
+      <AIAnalysisModal
+        isOpen={aiModalOpen}
+        onClose={() => {
+          setAiModalOpen(false);
+          setAnalysisResult(null);
+        }}
+        analysisResult={analysisResult}
+        documentId={documentId}
+        editor={editor}
+        defaultTab={aiModalTab}
+        showAnalysisTab={aiModalTab === 'analysis'}
       />
 
       {plan === "Basic" ? (

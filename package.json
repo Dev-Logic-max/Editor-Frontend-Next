@@ -31,8 +31,6 @@
     "@radix-ui/react-toast": "^1.2.15",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/typography": "^0.5.19",
-    "@tiptap-pro/extension-ai": "^3.3.0",
-    "@tiptap-pro/extension-comments": "^3.3.0",
     "@tiptap/extension-character-count": "^3.9.1",
     "@tiptap/extension-collaboration": "^3.9.1",
     "@tiptap/extension-collaboration-caret": "^3.9.1",

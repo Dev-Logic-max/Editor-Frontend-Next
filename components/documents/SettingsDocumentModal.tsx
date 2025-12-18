@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 
 import { AppearanceDocumentModal } from './AppearanceDocumentModal';
 import { useEditorSettings, type UISettingKey } from '@/hooks/useEditorSettings';
-import { Save, RotateCcw } from 'lucide-react';
+import { Save, RotateCcw, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const toolbarItems = [
@@ -22,7 +22,7 @@ const toolbarItems = [
   { id: 'heading', label: 'Headings', icon: 'H1' },
   { id: 'bulletList', label: 'Bullet List', icon: '• List' },
   { id: 'orderedList', label: 'Ordered List', icon: '1. List' },
-  { id: 'blockquote', label: 'Blockquote', icon: '“”' },
+  { id: 'blockquote', label: 'Blockquote', icon: '""' },
   { id: 'codeBlock', label: 'Code Block', icon: '</>' },
   { id: 'link', label: 'Link', icon: 'Link' },
   { id: 'image', label: 'Image', icon: 'Image' },
@@ -37,6 +37,17 @@ const toolbarItems = [
   { id: 'download', label: 'Download', icon: 'Download' },
 ];
 
+const availableImageModels = [
+  { id: 'pollinations-flux', name: 'Pollinations Flux', description: 'FREE - High quality, no API key', provider: 'Pollinations', cost: 'Free' },
+  { id: 'pollinations-flux-realism', name: 'Pollinations Flux Realism', description: 'FREE - Photorealistic', provider: 'Pollinations', cost: 'Free' },
+  { id: 'pollinations-flux-anime', name: 'Pollinations Flux Anime', description: 'FREE - Anime style', provider: 'Pollinations', cost: 'Free' },
+  { id: 'pollinations-turbo', name: 'Pollinations Turbo', description: 'FREE - Fast generation', provider: 'Pollinations', cost: 'Free' },
+  { id: 'hf-sdxl', name: 'Stable Diffusion XL', description: 'FREE - Queue-based', provider: 'Hugging Face', cost: 'Free (slower)' },
+  { id: 'hf-flux-schnell', name: 'FLUX.1 Schnell', description: 'FREE - Fast, good quality', provider: 'Hugging Face', cost: 'Free (slower)' },
+  { id: 'replicate-flux-pro', name: 'FLUX.1 Pro', description: 'Best quality available', provider: 'Replicate', cost: '$0.05/img (50 free)' },
+  { id: 'replicate-flux-dev', name: 'FLUX.1 Dev', description: 'High quality, faster', provider: 'Replicate', cost: '$0.003/img' },
+];
+
 interface DocumentSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -45,17 +56,27 @@ interface DocumentSettingsModalProps {
 export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModalProps) {
   const { settings, updateSetting, resetToDefault } = useEditorSettings();
   const [appearanceModalOpen, setAppearanceModalOpen] = useState(false);
+  
+  // ✅ State for selected model
+  const [selectedModel, setSelectedModel] = useState<string>(
+    () => localStorage.getItem('selectedAIModel') || 'pollinations-flux'
+  );
 
   const handleSave = () => {
     localStorage.setItem('editorSettings', JSON.stringify(settings));
+    // ✅ Save selected model
+    localStorage.setItem('selectedAIModel', selectedModel);
     toast.success('Document editor settings saved!');
     onClose();
   };
 
-  const handleReset = () => {
-    resetToDefault();
-    toast.success('Settings reset to default');
-  };
+const handleReset = () => {
+  resetToDefault();
+  setSelectedModel('pollinations-flux');
+  localStorage.setItem('selectedAIModel', 'pollinations-flux');
+  toast.success('Settings reset to default');
+};
+
 
   const UIToggle = ({ keyName, label }: { keyName: UISettingKey; label: string }) => (
     <div className="flex items-center justify-between p-2">
@@ -78,7 +99,10 @@ export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModal
         </DialogHeader>
 
         <Tabs defaultValue="toolbar" className="mt-4">
-          <TabsList className="grid grid-cols-3 w-full rounded-xl border bg-white/80 backdrop-blur-sm shadow-md">
+          <TabsList className="grid grid-cols-4 w-full rounded-xl border bg-white/80 backdrop-blur-sm shadow-md">
+            <TabsTrigger value="model" className="data-[state=active]:bg-linear-to-br data-[state=active]:from-pink-400 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-lg">
+              Choose Model
+            </TabsTrigger>
             <TabsTrigger value="toolbar" className="data-[state=active]:bg-linear-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg">
               Toolbar
             </TabsTrigger>
@@ -89,6 +113,60 @@ export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModal
               Appearance
             </TabsTrigger>
           </TabsList>
+
+          {/* ✅ UPDATED Model Selection Tab */}
+          <TabsContent value="model" className="mt-4 space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium text-slate-700 text-lg">Select Image Model</h4>
+              <Badge variant="secondary" className="text-xs">
+                Selected: {availableImageModels.find(m => m.id === selectedModel)?.name}
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {availableImageModels.map((model) => {
+                const isSelected = selectedModel === model.id;
+                
+                return (
+                  <div
+                    key={model.id}
+                    onClick={() => setSelectedModel(model.id)}
+                    className={`
+                      relative p-4 border-2 rounded-lg cursor-pointer transition-all
+                      ${isSelected 
+                        ? 'border-indigo-500 bg-indigo-50 shadow-md' 
+                        : 'border-gray-200 hover:border-indigo-300 bg-white'
+                      }
+                    `}
+                  >
+                    {/* ✅ Checkmark for selected model */}
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 bg-indigo-500 text-white rounded-full p-1">
+                        <Check className="w-4 h-4" />
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center mb-2">
+                      <h5 className="font-semibold text-slate-800">{model.name}</h5>
+                      <Badge className={`text-xs ${isSelected ? 'bg-indigo-500 text-white' : ''}`}>
+                        {model.cost}
+                      </Badge>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-1">{model.description}</p>
+                    <p className="text-xs text-gray-400">Provider: {model.provider}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ✅ Model Info */}
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Tip:</strong> Free models are great for testing. Premium models offer better quality but require API keys.
+              </p>
+            </div>
+          </TabsContent>
 
           {/* Toolbar */}
           <TabsContent value="toolbar" className="mt-4">
