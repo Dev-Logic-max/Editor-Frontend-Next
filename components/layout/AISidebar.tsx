@@ -431,7 +431,7 @@ export function AIComparisonSidebar({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 400, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed right-0 top-0 h-screen w-full sm:w-[420px] bg-white border-l shadow-2xl z-50 flex flex-col"
+          className="fixed right-0 top-0 h-screen w-[96%] sm:w-[420px] bg-white border-l shadow-2xl z-50 flex flex-col"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b bg-linear-to-r from-purple-50 to-blue-50">
@@ -720,7 +720,7 @@ export function AIComparisonSidebar({
               </div>
 
               {/* Chat Input */}
-              <div className="p-4 border-t bg-linear-to-br from-gray-50 to-white space-y-3 shrink-0">
+              <div className="p-2 sm:p-4 border-t bg-linear-to-br from-gray-50 to-white space-y-3 shrink-0">
                 {/* Model & Context Row */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -772,7 +772,7 @@ export function AIComparisonSidebar({
                 </div>
 
                 {/* Help Text */}
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="lg:flex hidden items-center justify-between text-xs text-gray-500">
                   <span>
                     <kbd className="px-1.5 py-0.5 bg-gray-200 rounded font-mono">⏎</kbd> Send •
                     <kbd className="px-1.5 py-0.5 bg-gray-200 rounded font-mono ml-1">Shift+⏎</kbd> New line
@@ -910,7 +910,7 @@ export function AIComparisonSidebar({
               </div>
 
               {/* Image Generation Input - Bottom */}
-              <div className="p-4 border-t bg-linear-to-br from-gray-50 to-white space-y-3 shrink-0">
+              <div className="p-2 sm:p-4 border-t bg-linear-to-br from-gray-50 to-white space-y-3 shrink-0">
                 {/* Model & Context Row */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -996,7 +996,7 @@ export function AIComparisonSidebar({
                 </Button>
 
                 {/* Help Text */}
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs hidden lg:block text-gray-500 text-center">
                   <kbd className="px-1.5 py-0.5 bg-gray-200 rounded font-mono">Ctrl+Enter</kbd> to generate
                 </p>
               </div>

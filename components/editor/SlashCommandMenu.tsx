@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, JSX } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heading1, Heading2, Heading3, List, Quote, Code, Minus, Text, ImageIcon, LayoutTemplate, FileText, Database } from 'lucide-react';
+import { Heading1, Heading2, Heading3, List, Quote, Code, Minus, Text, ImageIcon, LayoutTemplate, FileText, Database, Network } from 'lucide-react';
 import { Editor } from '@tiptap/react';
 
 interface SlashCommandMenuProps {
@@ -14,7 +14,7 @@ interface CommandItem {
   description: string;
   icon: JSX.Element;
   shortcut?: string;
-  command: () => void;
+  command: (editor: Editor) => void;
 }
 
 interface CommandGroup {
@@ -27,6 +27,7 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
   const [query, setQuery] = useState('');
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [slashPos, setSlashPos] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const groups: CommandGroup[] = [
@@ -38,28 +39,28 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
           description: 'Start writing plain text.',
           icon: <Text className="w-4 h-4" />,
           shortcut: 'T',
-          command: () => editor?.chain().focus().clearNodes().run(),
+          command: (editor) => editor.chain().focus().clearNodes().run(),
         },
         {
           title: 'Heading 1',
           description: 'Big section heading.',
           icon: <Heading1 className="w-4 h-4" />,
           shortcut: 'H1',
-          command: () => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
+          command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run(),
         },
         {
           title: 'Heading 2',
           description: 'Medium section heading.',
           icon: <Heading2 className="w-4 h-4" />,
           shortcut: 'H2',
-          command: () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
+          command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
         },
         {
           title: 'Heading 3',
           description: 'Small section heading.',
           icon: <Heading3 className="w-4 h-4" />,
           shortcut: 'H3',
-          command: () => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
+          command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
         },
       ],
     },
@@ -71,21 +72,21 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
           description: 'Create a simple bullet list.',
           icon: <List className="w-4 h-4" />,
           shortcut: '⌘ + L',
-          command: () => editor?.chain().focus().toggleBulletList().run(),
+          command: (editor) => editor.chain().focus().toggleBulletList().run(),
         },
         {
           title: 'Quote',
           description: 'Add a blockquote.',
           icon: <Quote className="w-4 h-4" />,
           shortcut: '⌘ + Q',
-          command: () => editor?.chain().focus().toggleBlockquote().run(),
+          command: (editor) => editor.chain().focus().toggleBlockquote().run(),
         },
         {
           title: 'Divider',
           description: 'Add a horizontal line.',
           icon: <Minus className="w-4 h-4" />,
           shortcut: '---',
-          command: () => editor?.chain().focus().setHorizontalRule().run(),
+          command: (editor) => editor.chain().focus().setHorizontalRule().run(),
         },
       ],
     },
@@ -97,9 +98,9 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
           description: 'Upload or paste an image link.',
           icon: <ImageIcon className="w-4 h-4" />,
           shortcut: '⌘ + I',
-          command: () => {
+          command: (editor) => {
             const url = prompt('Enter image URL');
-            if (url) editor?.chain().focus().setImage({ src: url }).run();
+            if (url) editor.chain().focus().setImage({ src: url }).run();
           },
         },
         {
@@ -107,7 +108,7 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
           description: 'Insert formatted code.',
           icon: <Code className="w-4 h-4" />,
           shortcut: '⌘ + /',
-          command: () => editor?.chain().focus().toggleCodeBlock().run(),
+          command: (editor) => editor.chain().focus().toggleCodeBlock().run(),
         },
       ],
     },
@@ -135,32 +136,72 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
           shortcut: '⌘ + D',
           command: () => alert('Feature coming soon!'),
         },
+        {
+          title: 'Flow Diagram',
+          description: 'Insert visual workflow or mind map',
+          icon: <Network className="w-4 h-4" />,
+          command: (editor) => {
+            // Insert a placeholder that indicates where flow will go
+            editor.chain()
+              .focus()
+              .insertContent(`
+        <div style="padding: 16px; border: 2px dashed #3b82f6; border-radius: 8px; background: #eff6ff; text-align: center;">
+          <p>📊 <strong>Flow Diagram Placeholder</strong></p>
+          <p style="font-size: 14px; color: #666;">Use toolbar button to create your flow</p>
+        </div>
+      `)
+              .run();
+          }
+        }
       ],
     },
   ];
 
   const allCommands = groups.flatMap((g) => g.items);
+
+  // Filter based on query (typed after /)
   const filtered = allCommands.filter((c) =>
     c.title.toLowerCase().includes(query.toLowerCase())
   );
 
-  // 🔍 1. Detect slash and position menu
+  // Auto-select first matching item when query changes
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
+
+  // 🔍 1. Detect slash and track query
   useEffect(() => {
     if (!editor) return;
 
     const handleUpdate = () => {
       const { state, view } = editor;
       const { from } = state.selection;
-      const textBefore = state.doc.textBetween(from - 1, from, '\n', '\0');
+      const textBefore = state.doc.textBetween(Math.max(0, from - 50), from, '\n', '\0');
 
-      if (textBefore === '/') {
-        const pos = view.coordsAtPos(from);
-        setCoords({ top: pos.top + 25 + window.scrollY, left: pos.left + window.scrollX });
-        setIsOpen(true);
-        setQuery('');
-        setSelectedIndex(0);
-      } else if (isOpen && textBefore.trim().length === 0) {
-        // ESC when backspace removed slash
+      // Find last slash in the text before cursor
+      const lastSlashIndex = textBefore.lastIndexOf('/');
+
+      if (lastSlashIndex !== -1) {
+        const afterSlash = textBefore.substring(lastSlashIndex + 1);
+
+        // Only show menu if slash is at start of line or after space
+        const beforeSlash = textBefore.substring(0, lastSlashIndex);
+        const isValidSlash = beforeSlash.length === 0 || beforeSlash.endsWith(' ') || beforeSlash.endsWith('\n');
+
+        if (isValidSlash && !afterSlash.includes(' ') && !afterSlash.includes('\n')) {
+          const slashAbsolutePos = from - afterSlash.length - 1;
+          const pos = view.coordsAtPos(from);
+          setCoords({
+            top: pos.top + 25 + window.scrollY,
+            left: pos.left + window.scrollX
+          });
+          setSlashPos(slashAbsolutePos);
+          setQuery(afterSlash);
+          setIsOpen(true);
+        } else {
+          setIsOpen(false);
+        }
+      } else {
         setIsOpen(false);
       }
     };
@@ -169,12 +210,12 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
     return () => {
       editor.off('transaction', handleUpdate);
     };
-  }, [editor, isOpen]);
+  }, [editor]);
 
-  // 🎮 2. Keyboard navigation + ESC handling
+  // 🎮 2. Keyboard navigation + Enter to execute
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (!isOpen) return;
+      if (!isOpen || !editor) return;
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -184,19 +225,31 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
         setSelectedIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        filtered[selectedIndex]?.command();
+        const selectedCommand = filtered[selectedIndex];
+        if (selectedCommand) {
+          // Delete the slash and query text
+          editor.chain()
+            .focus()
+            .deleteRange({ from: slashPos, to: slashPos + query.length + 1 })
+            .run();
+
+          // Execute command
+          selectedCommand.command(editor);
+        }
         setIsOpen(false);
+        setQuery('');
       } else if (e.key === 'Escape') {
         e.preventDefault();
         setIsOpen(false);
+        setQuery('');
       }
     };
 
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [isOpen, filtered, selectedIndex]);
+  }, [isOpen, filtered, selectedIndex, editor, slashPos, query]);
 
-  if (!isOpen) return null;
+  if (!isOpen || filtered.length === 0) return null;
 
   return (
     <AnimatePresence>
@@ -222,14 +275,26 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
                   {group.name}
                 </div>
                 {visibleItems.map((item) => {
-                  const actualIndex = allCommands.indexOf(item);
+                  const actualIndex = filtered.indexOf(item);
                   return (
                     <div
                       key={item.title}
-                      className={`flex items-start justify-between px-3 py-2 cursor-pointer text-sm ${actualIndex === selectedIndex ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
+                      className={`flex items-start justify-between px-3 py-2 cursor-pointer text-sm ${actualIndex === selectedIndex
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'hover:bg-gray-100'
+                        }`}
                       onClick={() => {
-                        item.command();
+                        if (!editor) return;
+                        // Delete slash and query
+                        editor.chain()
+                          .focus()
+                          .deleteRange({ from: slashPos, to: slashPos + query.length + 1 })
+                          .run();
+
+                        // Execute command
+                        item.command(editor);
                         setIsOpen(false);
+                        setQuery('');
                       }}
                     >
                       <div className="flex items-start gap-2">
@@ -252,10 +317,15 @@ export function SlashCommandMenu({ editor }: SlashCommandMenuProps) {
           })}
         </div>
         <div className="px-3 py-2 text-xs text-gray-500 border-t bg-gray-50 flex justify-between items-center">
-          <span>Type “/” to open menu</span>
+          <span>
+            {query ? `Searching: "${query}"` : 'Type to filter...'}
+          </span>
           <button
             className="text-blue-600 hover:underline"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              setIsOpen(false);
+              setQuery('');
+            }}
           >
             Esc
           </button>

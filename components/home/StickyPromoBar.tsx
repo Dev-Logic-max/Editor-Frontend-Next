@@ -5,7 +5,7 @@ import { X, Zap, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function StickyPromoBar() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   return (
     <AnimatePresence>

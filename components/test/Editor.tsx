@@ -53,6 +53,7 @@ import { HocuspocusProvider } from '@hocuspocus/provider';
 import { PiChatCircleTextBold } from 'react-icons/pi';
 import { FaHistory } from 'react-icons/fa';
 import '../../styles/editor.css';
+import { FlowDiagram } from '../links/FlowDiagram';
 
 interface EditorProps {
   docData?: any;
@@ -284,6 +285,7 @@ export default function Editor({ docData, userId, onUpdateTitle }: EditorProps) 
       Color,
       TextStyle,
       Underline,
+      FlowDiagram,
       // CustomParagraph,
       Highlight.configure({ multicolor: true }),
       CharacterCount.configure({ limit: 100000 }),

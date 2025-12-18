@@ -10,7 +10,7 @@ import { AppearanceDocumentModal } from '@/components/documents/AppearanceDocume
 import { SettingsDocumentModal } from '@/components/documents/SettingsDocumentModal';
 import { DeleteDocumentModal } from '@/components/documents/DeleteDocumentModal';
 import { EditDocumentModal } from '@/components/documents/EditDocumentModal';
-import { InviteModal } from '@/components/links/InviteCollaboratorModal';
+import { InviteModal } from '@/components/connection/InviteCollaboratorModal';
 import { Badge } from '@/components/ui/badge';
 
 import { HiOutlineDocumentDuplicate, HiOutlineUserGroup } from 'react-icons/hi2';

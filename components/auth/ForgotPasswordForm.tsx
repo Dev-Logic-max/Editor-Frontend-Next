@@ -107,7 +107,7 @@ export function ForgotPasswordForm() {
           <div className="mt-6">
             <Link 
               href="/login" 
-              className="flex items-center justify-center gap-2 text-purple-600 hover:text-purple-700 font-semibold hover:underline transition-colors"
+              className="flex items-center justify-center gap-2 w-fit mx-auto text-purple-600 hover:text-purple-700 font-semibold hover:underline transition-colors"
             >
               <RiArrowLeftLine className="w-5 h-5" />
               Back to Sign In
