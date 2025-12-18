@@ -23,6 +23,8 @@ import { BsBoxSeamFill } from "react-icons/bs";
 import { Wand2, Settings } from 'lucide-react';
 
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
+import { Network } from 'lucide-react';
+import { FlowDiagramModal } from '../links/FlowDiagramModal';
 
 interface EditorToolbarProps {
   plan: string;
@@ -40,6 +42,8 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [flowModalOpen, setFlowModalOpen] = useState(false);
+  const [editingFlowId, setEditingFlowId] = useState<string | null>(null);
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiModalTab, setAiModalTab] = useState<'analysis' | 'humanize' | 'settings'>('humanize');
   const [analysisResult, setAnalysisResult] = useState<any>(null);
@@ -109,6 +113,14 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
       </Button>
     </motion.div>
   );
+
+  const getExistingFlowData = () => {
+    if (!editingFlowId) return undefined;
+    
+    const flows = JSON.parse(localStorage.getItem(`flows-${documentId}`) || '[]');
+    const flowData = flows.find((f: any) => f.id === editingFlowId);
+    return flowData;
+  };
 
   const openLinkModal = () => {
     setLinkModalOpen(true);
@@ -291,6 +303,11 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             active={editor.isActive('codeBlock')}
           />
+          <IconButton
+            icon={Network}
+            title="Insert Flow Diagram"
+            onClick={() => setFlowModalOpen(true)}
+          />
         </div>
 
         {/* Divider */}
@@ -468,6 +485,45 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           />
         </>)
       }
+
+      <FlowDiagramModal
+        isOpen={flowModalOpen}
+        onClose={() => {
+          setFlowModalOpen(false);
+          setEditingFlowId(null);
+        }}
+        initialNodes={getExistingFlowData()?.nodes}
+        initialEdges={getExistingFlowData()?.edges}
+        onSave={(nodes, edges) => {
+          let flowId = editingFlowId;
+          
+          // If editing existing flow, update it
+          if (flowId) {
+            const flows = JSON.parse(localStorage.getItem(`flows-${documentId}`) || '[]');
+            const updatedFlows = flows.map((f: any) => 
+              f.id === flowId ? { ...f, nodes, edges, updatedAt: new Date().toISOString() } : f
+            );
+            localStorage.setItem(`flows-${documentId}`, JSON.stringify(updatedFlows));
+            toast.success('✅ Flow diagram updated!');
+          } else {
+            // Create new flow
+            flowId = `flow-${Date.now()}`;
+            
+            editor.chain().focus().insertContent(
+              `<p><span data-flow-id="${flowId}" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); background-color: lightGray; border: 1px solid black;  border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 14px;">📊 Flow Diagram (${nodes.length} nodes, ${edges.length} connections)</span></p>`
+            ).run();
+            
+            const flowData = { id: flowId, nodes, edges, createdAt: new Date().toISOString() };
+            const existingFlows = JSON.parse(localStorage.getItem(`flows-${documentId}`) || '[]');
+            localStorage.setItem(`flows-${documentId}`, JSON.stringify([...existingFlows, flowData]));
+            
+            toast.success('✅ Flow diagram inserted! Click it to edit.');
+          }
+          
+          setEditingFlowId(null);
+        }}
+      />
+
     </>
   );
 }

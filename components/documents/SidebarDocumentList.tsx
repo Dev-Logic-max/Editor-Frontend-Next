@@ -10,6 +10,7 @@ import { AppearanceDocumentModal } from '@/components/documents/AppearanceDocume
 import { SettingsDocumentModal } from '@/components/documents/SettingsDocumentModal';
 import { DeleteDocumentModal } from '@/components/documents/DeleteDocumentModal';
 import { EditDocumentModal } from '@/components/documents/EditDocumentModal';
+import { InviteModal } from '@/components/connection/InviteCollaboratorModal';
 import { InviteModal } from '@/components/links/InviteCollaboratorModal';
 import { AIAnalysisModal } from '@/components/documents/AIAnalysisModal';
 import { Badge } from '@/components/ui/badge';

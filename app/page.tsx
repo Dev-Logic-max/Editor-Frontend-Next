@@ -22,31 +22,29 @@ export default function Home() {
       <StickyPromoBar />
 
       <LandingLayout>
-        <div className="bg-white">
-          {/* Hero Section */}
-          <HeroSection />
+        {/* Hero Section */}
+        <HeroSection />
 
-          {/* Features Section */}
-          <FeaturesSection />
+        {/* Features Section */}
+        <FeaturesSection />
 
-          {/* Editor Showcase - NEW Interactive Section */}
-          <EditorShowcase />
+        {/* Editor Showcase - NEW Interactive Section */}
+        <EditorShowcase />
 
-          {/* Live Demo Section */}
-          <LiveDemoSection />
+        {/* Live Demo Section */}
+        <LiveDemoSection />
 
-          {/* Testimonials Section */}
-          <TestimonialsSection />
+        {/* Testimonials Section */}
+        <TestimonialsSection />
 
-          {/* Pricing Section - NEW */}
-          <PricingSection />
+        {/* Pricing Section - NEW */}
+        <PricingSection />
 
-          {/* Integration Section - NEW */}
-          <IntegrationSection />
+        {/* Integration Section - NEW */}
+        <IntegrationSection />
 
-          {/* Final CTA Section - NEW */}
-          <FinalCTASection />
-        </div>
+        {/* Final CTA Section - NEW */}
+        <FinalCTASection />
       </LandingLayout>
     </>
   );

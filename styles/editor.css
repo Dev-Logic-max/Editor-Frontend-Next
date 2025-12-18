@@ -348,3 +348,44 @@
   content: '\00a0';
   display: inline-block;
 }
+
+/* AI Suggestion Inline Styling (Notion-style) */
+.ProseMirror .ai-suggestion {
+  background: linear-gradient(to right, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1));
+  border-bottom: 2px solid rgba(168, 85, 247, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+  animation: ai-pulse 1.5s ease-in-out infinite;
+  color: #6b21a8;
+  font-weight: 500;
+}
+
+@keyframes ai-pulse {
+  0%, 100% {
+    background: linear-gradient(to right, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1));
+  }
+  50% {
+    background: linear-gradient(to right, rgba(168, 85, 247, 0.15), rgba(59, 130, 246, 0.15));
+  }
+}
+
+/* Cursor blinking effect for streaming */
+.ai-suggestion::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background-color: #a855f7;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Remove cursor after streaming completes */
+.ai-suggestion.complete::after {
+  display: none;
+}
