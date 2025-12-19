@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
@@ -120,29 +121,29 @@ export function EditorStatusBar({ document, saveStatus, connectionStatus, active
     };
 
     return (
-        <div className={`bg-gray-50 px-4 py-1 flex flex-wrap justify-between items-center gap-2 ${layout === EditorLayout.Document ? 'rounded-xl m-2 mt-4' : 'border-b'}`}>
+        <div className={`bg-gray-50 px-2 sm:px-4 py-1 flex flex-wrap justify-between items-center gap-2 ${layout === EditorLayout.Document ? 'rounded-xl lg:m-2 mt-2 lg:mt-4' : 'border-b'}`}>
             <span className="flex items-center gap-4 order-1">
-                <div className="sm:flex items-center gap-1 text-xs sm:text-sm font-mono hidden">
+                <div className="sm:flex items-center gap-1 text-xs xl:text-sm font-mono hidden">
                     <span className="hidden md:block">Status:</span>
                     <span className={getStatusColor(connectionStatus)}>{connectionStatus}</span>
                 </div>
-                <span className="hidden sm:block text-sm font-mono">Letters: <b>{letterCount}</b></span>
-                <span className="block sm:hidden relative"><PiChatCenteredTextDuotone className="w-5 h-5" />
+                <span className="hidden lg:block text-xs xl:text-sm font-mono">Letters: <b>{letterCount}</b></span>
+                <span className="block lg:hidden relative"><PiChatCenteredTextDuotone className="sm:w-5 sm:h-5" />
                     <span className="absolute text-center text-[8px] font-bold content-center w-fit px-1 rounded-full border -top-2 left-3 bg-gray-100 border-gray-400">{letterCount}</span>
                 </span>
-                <span className="hidden sm:block text-sm font-mono">Words: <b>{wordCount}</b></span>
+                <span className="hidden lg:block text-xs xl:text-sm font-mono">Words: <b>{wordCount}</b></span>
             </span>
             <span className="flex items-center gap-4 order-2">
-                <span className="text-sm font-sans font-medium text-shadow-lg">
+                <span className="text-xs xl:text-sm font-sans font-medium text-shadow-lg">
                     ⏱️ {formatTimeSpent(timeSpent)}
                 </span>
-                <span className="text-xs sm:text-sm">
+                <span className="hidden xl:block text-sm">
                     📍 Line {cursorPosition.line} : Col {cursorPosition.column}
                 </span>
             </span>
             <div className="flex items-center gap-2 md:gap-4 order-2">
                 {activeUsers.length > 1 && (
-                    <div className="lg:flex items-center gap-1 hidden">
+                    <div className="xl:flex items-center gap-1 hidden">
                         {activeUsers.map((u) => (
                             <div
                                 key={u.clientId}
@@ -153,13 +154,13 @@ export function EditorStatusBar({ document, saveStatus, connectionStatus, active
                         ))}
                     </div>
                 )}
-                <HoverCard openDelay={100}>
-                    <HoverCardTrigger asChild>
-                        <Badge className="sm:flex text-xs font-mono font-bold rounded-full border border-gray-800/60 text-center text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-purple-400 hidden">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Badge className="flex text-[8px] sm:text-[10px] xl:text-xs font-mono font-bold rounded-full border border-gray-800/60 text-center text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-purple-400">
                             <HiUsers className="text-purple-600" /> {activeUsers.length} <span>Active</span>
                         </Badge>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-60">
+                    </PopoverTrigger>
+                    <PopoverContent className="w-60 p-2 xl:p-4 my-1 mx-2 sm:m-0">
                         <p className="text-xs text-gray-600 mb-2">Currently active users:</p>
                         <div className="flex flex-col gap-2">
                             {activeUsers.length === 0 ? (
@@ -185,7 +186,7 @@ export function EditorStatusBar({ document, saveStatus, connectionStatus, active
                                                 <div className="flex items-center gap-1">
                                                     <span className="text-sm font-semibold">{u.name}</span>
                                                     {isCreator && <GiQueenCrown className="text-amber-500 w-4 h-4" />}
-                                                    {isCreator && <span className="text-xs font-semibold px-1 rounded-lg bg-green-200">Creator</span>}
+                                                    {isCreator && <span className="text-[10px] sm:text-xs font-semibold px-1 rounded-lg bg-green-200">Creator</span>}
                                                 </div>
                                                 <span className="text-[10px] text-gray-500">Last seen {lastSeen}</span>
                                             </div>
@@ -194,9 +195,9 @@ export function EditorStatusBar({ document, saveStatus, connectionStatus, active
                                 })
                             )}
                         </div>
-                    </HoverCardContent>
-                </HoverCard>
-                <div className="flex items-center gap-1 text-xs sm:text-sm font-mono">
+                    </PopoverContent>
+                </Popover>
+                <div className="flex items-center gap-1 text-xs xl:text-sm font-mono">
                     <span className="hidden md:block">Document:</span>
                     <span className={getStatusColor(saveStatus)}>{saveStatus}</span>
                 </div>

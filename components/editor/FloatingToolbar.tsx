@@ -6,14 +6,18 @@ import { Editor } from '@tiptap/react';
 
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-import { Bold, Italic, Underline, Strikethrough, Link as LinkIcon, Code, X, Check } from 'lucide-react';
+import { BsThreeDots } from 'react-icons/bs';
+import { Bold, Italic, Underline, Strikethrough, Link as LinkIcon, Code, X, Check, SmilePlus } from 'lucide-react';
 
 import { AIMenu } from '@/components/commands/AIMenu';
 import { MotionDiv } from '@/components/common/MotionDiv';
+import { ColorPicker } from '@/components/services/ColorPicker';
+import { ToolbarEmojiPicker } from '@/components/common/ToolbarEmojiPicker';
 
 interface FloatingToolbarProps {
-  editor: Editor | null;
+  editor: Editor;
   documentId: string;
   onAIStart?: (originalText: string, action: string) => void;
   onAIComplete?: (originalText: string, result: string, action: string) => void;
@@ -22,6 +26,7 @@ interface FloatingToolbarProps {
 export function FloatingToolbar({ editor, onAIStart, onAIComplete, documentId }: FloatingToolbarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const [headingLevel, setHeadingLevel] = useState('Paragraph');
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkValue, setLinkValue] = useState('');
   const linkInputRef = useRef<HTMLInputElement>(null);
@@ -70,6 +75,14 @@ export function FloatingToolbar({ editor, onAIStart, onAIComplete, documentId }:
     }
   }, [showLinkInput]);
 
+  const setHeading = (level: string) => {
+    if (level === 'Paragraph') editor.chain().focus().setParagraph().run();
+    else if (level === 'Heading 1') editor.chain().focus().setHeading({ level: 1 }).run();
+    else if (level === 'Heading 2') editor.chain().focus().setHeading({ level: 2 }).run();
+    else if (level === 'Heading 3') editor.chain().focus().setHeading({ level: 3 }).run();
+    setHeadingLevel(level);
+  };
+
   const applyLink = () => {
     if (linkValue.trim()) {
       editor?.chain().focus().setLink({ href: linkValue.trim() }).run();
@@ -88,7 +101,7 @@ export function FloatingToolbar({ editor, onAIStart, onAIComplete, documentId }:
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.15 }}
-          className="absolute z-20 flex items-center gap-1 bg-white border border-gray-200 rounded-xl shadow-md px-2 py-1"
+          className="absolute z-20 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow-md px-1 py-0.5"
           style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
         >
           {!showLinkInput ? (
@@ -103,18 +116,49 @@ export function FloatingToolbar({ editor, onAIStart, onAIComplete, documentId }:
 
               <div className="w-px h-6 bg-gray-300 mx-0.5" />
 
+              {/* Headings */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className='py-1.5 h-fit'>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    {headingLevel}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className='text-xs'>
+                  <DropdownMenuItem onClick={() => setHeading('Paragraph')}>
+                    Paragraph
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHeading('Heading 1')}>
+                    Heading 1
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHeading('Heading 2')}>
+                    Heading 2
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHeading('Heading 3')}>
+                    Heading 3
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button
+                variant="ghost"
+                size="icon-sm"
+              >
+                <ToolbarEmojiPicker editor={editor} />
+              </Button>
+
               {[
-                { icon: <Bold className="w-4 h-4" />, action: 'toggleBold', name: 'Bold' },
-                { icon: <Italic className="w-4 h-4" />, action: 'toggleItalic', name: 'Italic' },
-                { icon: <Underline className="w-4 h-4" />, action: 'toggleUnderline', name: 'Underline' },
-                { icon: <Strikethrough className="w-4 h-4" />, action: 'toggleStrike', name: 'Strike' },
-                { icon: <Code className="w-4 h-4" />, action: 'toggleCode', name: 'Code' },
+                { icon: <Bold />, action: 'toggleBold', name: 'Bold' },
+                { icon: <Italic />, action: 'toggleItalic', name: 'Italic' },
+                { icon: <Underline />, action: 'toggleUnderline', name: 'Underline' },
+                { icon: <Strikethrough />, action: 'toggleStrike', name: 'Strike' },
+                { icon: <Code />, action: 'toggleCode', name: 'Code' },
               ].map(({ icon, action, name }) => (
                 <Tooltip key={name}>
                   <TooltipTrigger asChild>
                     <Button
-                      variant={editor?.isActive(name.toLowerCase()) ? 'default' : 'ghost'}
-                      size="icon"
+                      variant={editor?.isActive(name.toLowerCase()) ? 'secondary' : 'ghost'}
+                      size="icon-sm"
+                      className={`${editor?.isActive(name.toLowerCase()) ? 'border border-gray-300' : ''}`}
                       onClick={() => {
                         const command = (editor?.chain().focus() as any)[action];
                         if (typeof command === 'function') {
@@ -146,6 +190,17 @@ export function FloatingToolbar({ editor, onAIStart, onAIComplete, documentId }:
                 </TooltipTrigger>
                 <TooltipContent>Insert link</TooltipContent>
               </Tooltip>
+
+              <ColorPicker editor={editor} />
+
+              <div className="w-[0.5px] h-6 bg-gray-300 mx-0.5" />
+
+              <Button
+                variant="ghost"
+                size="icon-sm"
+              >
+                <BsThreeDots />
+              </Button>
             </>
           ) : (
             <motion.div

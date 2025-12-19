@@ -166,8 +166,8 @@ export function InviteModal({ documentId, isOpen, onClose, currentUserId }: Invi
   };
 
   const handleCopyShareLink = () => {
-    const shareLink = `${window.location.origin}/documents/${documentId}`;
-    navigator.clipboard.writeText(shareLink);
+    // const shareLink = `${window.location.origin}/documents/${documentId}`;
+    // navigator.clipboard.writeText(shareLink);
     setLinkCopied(true);
     toast.success('✅ Share link copied!');
     setTimeout(() => setLinkCopied(false), 2000);
@@ -362,7 +362,7 @@ export function InviteModal({ documentId, isOpen, onClose, currentUserId }: Invi
               </p>
               <div className="flex gap-2">
                 <Input
-                  value={`${window.location.origin}/documents/${documentId}`}
+                  // value={`${window.location.origin}/documents/${documentId}`}
                   readOnly
                   className="bg-white"
                 />

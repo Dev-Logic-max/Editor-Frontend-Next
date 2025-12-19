@@ -49,19 +49,18 @@ export function EditorInfoBar({ document, provider, userId, lastSavedAt }: Edito
   const createdTime = formatDistanceToNow(new Date(document.createdAt), { addSuffix: true });
 
   return (
-    <div className={`text-xs text-gray-500 w-full py-1 flex flex-wrap px-2 md:px-4 ${layout === EditorLayout.Document ? 'gap-4 justify-between sm:justify-end' : 'border-b justify-between'} items-center`}>
-      <div>
-        <span>Created {createdTime}</span>
-        {document.createdBy?.name && <span> by <b>{document.createdBy.name}</b></span>}
-      </div>
-
+    <div className={`text-[10px] lg:text-xs text-gray-500 w-full py-1 flex flex-wrap px-2 md:px-4 ${layout === EditorLayout.Document ? 'gap-4 justify-center sm:justify-end' : 'border-b justify-between'} items-center`}>
       {typingUsers.length > 0 && (
         <div className="text-blue-500 animate-pulse">
           ✏️ {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
         </div>
       )}
 
-      <div>
+      <div className={`${typingUsers.length > 0 && 'hidden sm:inline-block'}`}>
+        <span>Created {createdTime}</span>
+        {document.createdBy?.name && <span> by <b>{document.createdBy.name}</b></span>}
+      </div>
+      <div className={`${typingUsers.length > 0 && 'hidden sm:inline-block'}`}>
         <span>Last updated {formatDistanceToNow(updatedTime, { addSuffix: true })}</span>
         {document.updatedBy?.name && <span> by <b>{document.updatedBy.name}</b></span>}
       </div>
