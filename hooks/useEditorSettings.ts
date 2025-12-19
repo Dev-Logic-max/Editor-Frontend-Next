@@ -14,6 +14,7 @@ export enum EditorTheme {
 
 interface EditorSettings {
   toolbar: boolean[];
+  floatingToolbar: boolean[];
   ui: {
     showStatusBar: boolean;
     showInfoBar: boolean;
@@ -28,7 +29,8 @@ interface EditorSettings {
 }
 
 const defaultSettings: EditorSettings = {
-  toolbar: new Array(20).fill(true), // all on by default
+  toolbar: new Array(20).fill(true),
+  floatingToolbar: new Array(8).fill(true), 
   ui: {
     showStatusBar: true,
     showInfoBar: true,
@@ -89,7 +91,7 @@ export function useEditorSettings() {
   }, []);
 
   const updateSetting = (
-    category: 'toolbar' | 'ui' | 'appearance',
+    category: 'toolbar' | 'floatingToolbar' | 'ui' | 'appearance',
     key: string | number,
     value: any,
   ) => {
@@ -101,6 +103,13 @@ export function useEditorSettings() {
         const toolbar = [...prev.toolbar];
         toolbar[key as number] = value as boolean;
         newSettings.toolbar = toolbar;
+      }
+
+      // Update floating toolbar (array of booleans)
+      else if (category === 'floatingToolbar' && typeof key === 'number') {
+        const floatingToolbar = [...prev.floatingToolbar];
+        floatingToolbar[key as number] = value as boolean;
+        newSettings.floatingToolbar = floatingToolbar;
       }
 
       // Update UI toggles (showHeader, etc.)

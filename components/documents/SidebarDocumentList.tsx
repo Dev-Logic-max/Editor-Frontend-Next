@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AppearanceDocumentModal } from '@/components/documents/AppearanceDocumentModal';
 import { SettingsDocumentModal } from '@/components/documents/SettingsDocumentModal';
 import { DeleteDocumentModal } from '@/components/documents/DeleteDocumentModal';
 import { EditDocumentModal } from '@/components/documents/EditDocumentModal';
@@ -15,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 
 import { HiOutlineDocumentDuplicate, HiOutlineUserGroup } from 'react-icons/hi2';
 import { IoDocumentTextOutline } from "react-icons/io5";
-import { MdOutlineColorLens } from "react-icons/md";
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { FaEllipsisV } from 'react-icons/fa';
 import { LuSettings } from 'react-icons/lu';
@@ -35,7 +33,6 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
   const [selectedDocId, setSelectedDocId] = useState<string>('');
 
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  const [appearanceModalOpen, setAppearanceModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -102,16 +99,6 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
                     className="flex items-center gap-2 hover:bg-cream-100 hover:text-indigo-400"
                     onClick={() => {
                       setSelectedDocId(doc._id);
-                      setAppearanceModalOpen(true);
-                    }}
-                  >
-                    <MdOutlineColorLens className="" />
-                    Appearance
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="flex items-center gap-2 hover:bg-cream-100 hover:text-indigo-400"
-                    onClick={() => {
-                      setSelectedDocId(doc._id);
                       setSettingsModalOpen(true);
                     }}
                   >
@@ -150,10 +137,6 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
             setInviteModalOpen(false);
             setSelectedDocId('');
           }}
-        />
-        <AppearanceDocumentModal
-          isOpen={appearanceModalOpen}
-          onClose={() => setAppearanceModalOpen(false)}
         />
         <SettingsDocumentModal
           isOpen={settingsModalOpen}

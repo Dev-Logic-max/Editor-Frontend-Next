@@ -10,19 +10,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 import { AIMenu } from '@/components/commands/AIMenu';
 import { LinkModal } from '@/components/services/LinkModal';
-import { ToolbarEmojiPicker } from '@/components/common/ToolbarEmojiPicker';
 import { ColorPicker } from '@/components/services/ColorPicker';
+import { FlowDiagramModal } from '@/components/links/FlowDiagramModal';
 import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
 import { ImageUploadModal } from '@/components/services/ImageUploadModal';
 import { TableInsertModal } from '@/components/services/TableInsertModal';
+import { ToolbarEmojiPicker } from '@/components/common/ToolbarEmojiPicker';
 import { MediaLibraryProModal } from '@/components/media/MediaLibraryProModal';
 
-import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaHighlighter, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaPhotoVideo } from 'react-icons/fa';
+import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser,  FaQuoteRight, FaCode, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaStrikethrough, FaNetworkWired, FaAlignJustify } from 'react-icons/fa';
 import { BsBoxSeamFill } from "react-icons/bs";
 
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
-import { Network } from 'lucide-react';
-import { FlowDiagramModal } from '../links/FlowDiagramModal';
 
 interface EditorToolbarProps {
   plan: string;
@@ -32,6 +31,35 @@ interface EditorToolbarProps {
   onAIStart?: (originalText: string, action: string) => void;
   onAIComplete?: (originalText: string, result: string, action: string) => void;
 }
+
+const TOOLBAR_BUTTON_MAP = {
+  0: 'bold',
+  1: 'italic',
+  2: 'underline',
+  3: 'highlight',
+  4: 'textColor',
+  5: 'bgColor',
+  6: 'aiMenu',
+  7: 'emoji',
+  8: 'heading',
+  9: 'bulletList',
+  10: 'orderedList',
+  11: 'blockquote',
+  12: 'codeBlock',
+  13: 'flowDiagram',
+  14: 'link',
+  15: 'image',
+  16: 'table',
+  17: 'mediaLibrary',
+  18: 'alignLeft',
+  19: 'alignCenter',
+  20: 'alignRight',
+  21: 'undo',
+  22: 'redo',
+  23: 'clear',
+  24: 'print',
+  25: 'download',
+};
 
 export function EditorToolbar({ plan, editor, document, documentId, onAIStart, onAIComplete }: EditorToolbarProps) {
   const { settings } = useEditorSettings();
@@ -90,7 +118,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
       <Button
         variant="ghost"
-        size="sm"
+        size="icon-sm"
         disabled={disabled}
         onMouseDown={(e) => {
           // Prevent button from stealing focus
@@ -101,7 +129,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           onClick();
         }}
         title={title}
-        className={`p-2 rounded-md transition-all ${active ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-300' : 'hover:bg-gray-100 text-gray-700'} ${custom}`}
+        className={`p-2 rounded-lg transition-all ${active ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-300' : 'hover:bg-gray-100 text-gray-700'} ${custom}`}
       >
         <Icon />
       </Button>
@@ -110,7 +138,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
 
   const getExistingFlowData = () => {
     if (!editingFlowId) return undefined;
-    
+
     const flows = JSON.parse(localStorage.getItem(`flows-${documentId}`) || '[]');
     const flowData = flows.find((f: any) => f.id === editingFlowId);
     return flowData;
@@ -136,41 +164,54 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
     toast.success('Document downloaded!');
   };
 
+  const isButtonEnabled = (index: number) => {
+    return settings.toolbar[index] !== false;
+  };
+
   console.log("Document Editor Toolbar", document)
 
   if (!editor) return null;
 
   return (
     <>
-      <div className={`sticky top-0 z-10 bg-white/95 backdrop-blur-md flex flex-wrap items-center justify-center md:justify-between transition-all ${layout === EditorLayout.Document ? 'rounded-xl border p-2 m-2' : 'shadow-sm md:p-3 border-b'}`}>
+      <div className={`sticky top-0 z-10 bg-white/95 backdrop-blur-md flex flex-wrap items-center justify-center md:justify-between transition-all ${layout === EditorLayout.Document ? 'rounded-xl border px-1 py-0.5 m-2' : 'shadow-sm md:p-3 border-b'}`}>
         {/* Left Section */}
         <div className="flex flex-wrap items-center gap-1">
-          <IconButton
-            icon={FaBold}
-            title="Bold"
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            active={editor.isActive('bold')}
-          />
-          <IconButton
-            icon={FaItalic}
-            title="Italic"
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            active={editor.isActive('italic')}
-          />
-          <IconButton
-            icon={FaUnderline}
-            title="Underline"
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
-            active={editor.isActive('underline')}
-          />
-          <IconButton
-            icon={FaHighlighter}
-            title="Highlight"
-            onClick={() => editor.chain().focus().toggleHighlight().run()}
-            active={editor.isActive('highlight')}
-          />
-          <ColorPicker editor={editor} type="text" />
-          <ColorPicker editor={editor} type="background" />
+          {isButtonEnabled(0) && (
+            <IconButton
+              icon={FaBold}
+              title="Bold"
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              active={editor.isActive('bold')}
+            />
+          )}
+          {isButtonEnabled(1) && (
+            <IconButton
+              icon={FaItalic}
+              title="Italic"
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              active={editor.isActive('italic')}
+            />
+          )}
+          {isButtonEnabled(2) && (
+            <IconButton
+              icon={FaUnderline}
+              title="Underline"
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              active={editor.isActive('underline')}
+            />
+          )}
+          {isButtonEnabled(3) && (
+            <IconButton
+              icon={FaStrikethrough}
+              title="Strikethrough"
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              active={editor.isActive('strikethrough')}
+            />
+          )}
+          {isButtonEnabled(3) && (
+          <ColorPicker editor={editor} />
+          )}
         </div>
 
         {/* Divider */}
@@ -186,16 +227,10 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
         {/* Divider */}
         <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
-        <ToolbarEmojiPicker editor={editor} />
-
-        {/* Divider */}
-        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
         {/* Headings */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <FaHeading className="h-4 w-4" />
               {headingLevel}
             </Button>
           </DropdownMenuTrigger>
@@ -214,6 +249,8 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <ToolbarEmojiPicker editor={editor} />
 
         {/* Divider */}
         <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
@@ -244,10 +281,36 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             active={editor.isActive('codeBlock')}
           />
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+
+        {/* Alignment */}
+        <div className="flex gap-1">
           <IconButton
-            icon={Network}
-            title="Insert Flow Diagram"
-            onClick={() => setFlowModalOpen(true)}
+            icon={FaAlignLeft}
+            title="Align Left"
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            active={editor.isActive({ textAlign: 'left' })}
+          />
+          <IconButton
+            icon={FaAlignCenter}
+            title="Align Center"
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            active={editor.isActive({ textAlign: 'center' })}
+          />
+          <IconButton
+            icon={FaAlignRight}
+            title="Align Right"
+            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            active={editor.isActive({ textAlign: 'right' })}
+          />
+          <IconButton
+            icon={FaAlignJustify}
+            title="Align Justify"
+            onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+            active={editor.isActive({ textAlign: 'justify' })}
           />
         </div>
 
@@ -283,7 +346,6 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
               });
             }}
           />
-
           <IconButton
             icon={BsBoxSeamFill}
             title="Media Library"
@@ -299,26 +361,12 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
 
         {/* Divider */}
         <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
-        {/* Alignment */}
-        <div className="flex gap-1">
+          
+        <div className="flex items-center gap-1">
           <IconButton
-            icon={FaAlignLeft}
-            title="Align Left"
-            onClick={() => editor.chain().focus().setTextAlign('left').run()}
-            active={editor.isActive({ textAlign: 'left' })}
-          />
-          <IconButton
-            icon={FaAlignCenter}
-            title="Align Center"
-            onClick={() => editor.chain().focus().setTextAlign('center').run()}
-            active={editor.isActive({ textAlign: 'center' })}
-          />
-          <IconButton
-            icon={FaAlignRight}
-            title="Align Right"
-            onClick={() => editor.chain().focus().setTextAlign('right').run()}
-            active={editor.isActive({ textAlign: 'right' })}
+            icon={FaNetworkWired}
+            title="Insert Flow Diagram"
+            onClick={() => setFlowModalOpen(true)}
           />
         </div>
 
@@ -410,11 +458,11 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
         initialEdges={getExistingFlowData()?.edges}
         onSave={(nodes, edges) => {
           let flowId = editingFlowId;
-          
+
           // If editing existing flow, update it
           if (flowId) {
             const flows = JSON.parse(localStorage.getItem(`flows-${documentId}`) || '[]');
-            const updatedFlows = flows.map((f: any) => 
+            const updatedFlows = flows.map((f: any) =>
               f.id === flowId ? { ...f, nodes, edges, updatedAt: new Date().toISOString() } : f
             );
             localStorage.setItem(`flows-${documentId}`, JSON.stringify(updatedFlows));
@@ -422,18 +470,18 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           } else {
             // Create new flow
             flowId = `flow-${Date.now()}`;
-            
+
             editor.chain().focus().insertContent(
               `<p><span data-flow-id="${flowId}" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); background-color: lightGray; border: 1px solid black;  border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 14px;">📊 Flow Diagram (${nodes.length} nodes, ${edges.length} connections)</span></p>`
             ).run();
-            
+
             const flowData = { id: flowId, nodes, edges, createdAt: new Date().toISOString() };
             const existingFlows = JSON.parse(localStorage.getItem(`flows-${documentId}`) || '[]');
             localStorage.setItem(`flows-${documentId}`, JSON.stringify([...existingFlows, flowData]));
-            
+
             toast.success('✅ Flow diagram inserted! Click it to edit.');
           }
-          
+
           setEditingFlowId(null);
         }}
       />
