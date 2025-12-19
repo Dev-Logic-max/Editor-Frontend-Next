@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,14 +12,17 @@ import { DocumentsTable } from '@/components/admin/DocumentTable';
 import { UsersTable } from '@/components/admin/UserTable';
 
 import { Users, FileText, RefreshCw } from 'lucide-react';
-import { AdminDocuments, AdminUsers } from '@/types';
-import { getDocumentsByAdmin } from '@/lib/api/documents';
+
 import { getUsers } from '@/lib/api/user';
+
+import { useDocumentStore } from '@/stores/documentStore';
 import { useAuth } from '@/hooks/useAuth';
+import { AdminUsers } from '@/types';
 
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
+  const { documents: docs, loading: docsLoading, total: docsTotal, page: docsPage, fetchDocumentsByAdmin } = useDocumentStore();
 
   // ----- Users -----
   const [users, setUsers] = useState<AdminUsers[]>([]);
@@ -27,18 +30,12 @@ export default function AdminPage() {
   const [usersTotal, setUsersTotal] = useState(0);
   const [usersLoading, setUsersLoading] = useState(false);
 
-  // ----- Documents -----
-  const [docs, setDocs] = useState<AdminDocuments[]>([]);
-  const [docsPage, setDocsPage] = useState(1);
-  const [docsTotal, setDocsTotal] = useState(0);
-  const [docsLoading, setDocsLoading] = useState(false);
+  const hasInitialized = useRef(false);
 
+  const [currentDocsPage, setCurrentDocsPage] = useState(1);
   const limit = 10;
 
-  // -------------------------------------------------
-  // FETCH USERS
-  // -------------------------------------------------
-  const fetchUsers = useCallback(async (page: number) => {
+  const fetchUsers = async (page: number) => {
     setUsersLoading(true);
     try {
       const res = await getUsers(page, limit);
@@ -53,51 +50,35 @@ export default function AdminPage() {
     } finally {
       setUsersLoading(false);
     }
-  }, []);
-
-  const fetchDocuments = useCallback(async (page: number) => {
-    setDocsLoading(true);
-    try {
-      const res = await getDocumentsByAdmin(page, limit);
-      console.log("Response", res)
-      if (res.data.success) {
-        setDocs(res.data.data);
-        setDocsTotal(res.data.pagination?.total ?? 0);
-      } else {
-        toast.error('Failed to load documents');
-      }
-    } catch (err: any) {
-      toast.error(err.message ?? 'Failed to load documents');
-    } finally {
-      setDocsLoading(false);
-    }
-  }, []);
+  };
 
   useEffect(() => {
-    if (!authLoading && user?.role === 'admin') {
-      fetchUsers(1);
-      fetchDocuments(1);
-    }
-  }, [authLoading, user?.role]);
+    if (hasInitialized.current) return;
+    if (authLoading) return;
+    if (user?.role !== 'admin') return;
 
+    hasInitialized.current = true;
+    fetchUsers(1);
+    fetchDocumentsByAdmin(1, limit);
+  }, [authLoading, user?.role, fetchDocumentsByAdmin]);
+
+  // Handle users pagination change
   useEffect(() => {
-    if (user?.role === 'admin' && usersPage > 1) {
-      fetchUsers(usersPage);
-    }
-  }, [usersPage]); // Only when page changes
+    if (!hasInitialized.current) return;
+    if (user?.role !== 'admin') return;
+    if (usersPage === 1) return; // Skip initial load
 
+    fetchUsers(usersPage);
+  }, [usersPage, user?.role]);
+
+  // Handle docs pagination change
   useEffect(() => {
-    if (user?.role === 'admin' && docsPage > 1) {
-      fetchDocuments(docsPage);
-    }
-  }, [docsPage]);
+    if (!hasInitialized.current) return;
+    if (user?.role !== 'admin') return;
+    if (currentDocsPage === 1) return; // Skip initial load
 
-  // useEffect(() => {
-  //   if (!authLoading && user?.role === 'admin') {
-  //     fetchUsers(usersPage);
-  //     fetchDocuments(docsPage);
-  //   }
-  // }, [authLoading, user, usersPage, docsPage, fetchUsers, fetchDocuments]);
+    fetchDocumentsByAdmin(currentDocsPage, limit);
+  }, [currentDocsPage, user?.role, fetchDocumentsByAdmin]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -108,9 +89,10 @@ export default function AdminPage() {
     setUsersPage(1);
     fetchUsers(1);
   };
+
   const refreshDocs = () => {
-    setDocsPage(1);
-    fetchDocuments(1);
+    setCurrentDocsPage(1);
+    fetchDocumentsByAdmin(1, limit, true);
   };
 
   if (authLoading) {
@@ -240,8 +222,8 @@ export default function AdminPage() {
                     disabled={docsPage === 1 || docsLoading}
                     onClick={() => {
                       const p = docsPage - 1;
-                      setDocsPage(p);
-                      fetchDocuments(p);
+                      setCurrentDocsPage(p);
+                      fetchDocumentsByAdmin(p);
                     }}
                   >
                     Previous
@@ -251,8 +233,8 @@ export default function AdminPage() {
                     disabled={docsPage * limit >= docsTotal || docsLoading}
                     onClick={() => {
                       const p = docsPage + 1;
-                      setDocsPage(p);
-                      fetchDocuments(p);
+                      setCurrentDocsPage(p);
+                      fetchDocumentsByAdmin(p);
                     }}
                   >
                     Next
