@@ -1,27 +1,27 @@
-  'use client';
+'use client';
 
-  import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-  import toast from 'react-hot-toast';
-  import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
-  import { Button } from '@/components/ui/button';
-  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-  import { AIMenu } from '@/components/commands/AIMenu';
-  import { LinkModal } from '@/components/services/LinkModal';
-    import { ColorPicker } from '@/components/services/ColorPicker';
+import { AIMenu } from '@/components/commands/AIMenu';
+import { LinkModal } from '@/components/services/LinkModal';
+import { ColorPicker } from '@/components/services/ColorPicker';
 import { FlowDiagramModal } from '@/components/links/FlowDiagramModal';
-  import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
-  import { ImageUploadModal } from '@/components/services/ImageUploadModal';
-  import { TableInsertModal } from '@/components/services/TableInsertModal';
+import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
+import { AIAnalysisModal } from '@/components/documents/AIAnalysisModal';
+import { ImageUploadModal } from '@/components/services/ImageUploadModal';
+import { TableInsertModal } from '@/components/services/TableInsertModal';
 import { ToolbarEmojiPicker } from '@/components/common/ToolbarEmojiPicker';
-  import { MediaLibraryProModal } from '@/components/media/MediaLibraryProModal';
-  import { AIAnalysisModal } from '../documents/AIAnalysisModal';
+import { MediaLibraryProModal } from '@/components/media/MediaLibraryProModal';
 
-import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser,  FaQuoteRight, FaCode, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaStrikethrough, FaNetworkWired, FaAlignJustify } from 'react-icons/fa';
+import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaQuoteRight, FaCode, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaStrikethrough, FaNetworkWired, FaAlignJustify } from 'react-icons/fa';
 import { BsBoxSeamFill } from "react-icons/bs";
-import { Wand2, Settings } from 'lucide-react';
+import { Wand2 } from 'lucide-react';
 
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
 
@@ -63,55 +63,55 @@ const TOOLBAR_BUTTON_MAP = {
   25: 'download',
 };
 
-  export function EditorToolbar({ plan, editor, document, documentId, onAIStart, onAIComplete }: EditorToolbarProps) {
-    const { settings } = useEditorSettings();
-    const [headingLevel, setHeadingLevel] = useState('Paragraph');
-    const [tableModalOpen, setTableModalOpen] = useState(false);
-    const [imageModalOpen, setImageModalOpen] = useState(false);
-    const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
-    const [linkModalOpen, setLinkModalOpen] = useState(false);
-    const [flowModalOpen, setFlowModalOpen] = useState(false);
-    const [editingFlowId, setEditingFlowId] = useState<string | null>(null);
-    const [aiModalOpen, setAiModalOpen] = useState(false);
-    const [aiModalTab, setAiModalTab] = useState<'analysis' | 'humanize' | 'settings'>('humanize');
-    const [analysisResult, setAnalysisResult] = useState<any>(null);
-    const [analyzing, setAnalyzing] = useState(false);
+export function EditorToolbar({ plan, editor, document, documentId, onAIStart, onAIComplete }: EditorToolbarProps) {
+  const { settings } = useEditorSettings();
+  const [headingLevel, setHeadingLevel] = useState('Paragraph');
+  const [tableModalOpen, setTableModalOpen] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [flowModalOpen, setFlowModalOpen] = useState(false);
+  const [editingFlowId, setEditingFlowId] = useState<string | null>(null);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiModalTab, setAiModalTab] = useState<'analysis' | 'humanize' | 'settings'>('humanize');
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
-    const layout = settings.appearance.layout;
+  const layout = settings.appearance.layout;
 
-    // ✅ Keep headingLevel in sync with editor selection
-    useEffect(() => {
-      if (!editor) return;
+  // ✅ Keep headingLevel in sync with editor selection
+  useEffect(() => {
+    if (!editor) return;
 
-      const updateHeadingLevel = () => {
-        if (editor.isActive("heading", { level: 1 })) setHeadingLevel("Heading 1");
-        else if (editor.isActive("heading", { level: 2 })) setHeadingLevel("Heading 2");
-        else if (editor.isActive("heading", { level: 3 })) setHeadingLevel("Heading 3");
-        else setHeadingLevel("Paragraph");
-      };
-
-      editor.on("selectionUpdate", updateHeadingLevel);
-      editor.on("transaction", updateHeadingLevel);
-
-      // Cleanup listener
-      return () => {
-        editor.off("selectionUpdate", updateHeadingLevel);
-        editor.off("transaction", updateHeadingLevel);
-      };
-    }, [editor]);
-
-    const setHeading = (level: string) => {
-      if (level === 'Paragraph') editor.chain().focus().setParagraph().run();
-      else if (level === 'Heading 1') editor.chain().focus().setHeading({ level: 1 }).run();
-      else if (level === 'Heading 2') editor.chain().focus().setHeading({ level: 2 }).run();
-      else if (level === 'Heading 3') editor.chain().focus().setHeading({ level: 3 }).run();
-      setHeadingLevel(level);
+    const updateHeadingLevel = () => {
+      if (editor.isActive("heading", { level: 1 })) setHeadingLevel("Heading 1");
+      else if (editor.isActive("heading", { level: 2 })) setHeadingLevel("Heading 2");
+      else if (editor.isActive("heading", { level: 3 })) setHeadingLevel("Heading 3");
+      else setHeadingLevel("Paragraph");
     };
 
-    const buttonVariants = {
-      hover: { scale: 1.08, transition: { duration: 0.15 } },
-      tap: { scale: 0.92, transition: { duration: 0.1 } },
+    editor.on("selectionUpdate", updateHeadingLevel);
+    editor.on("transaction", updateHeadingLevel);
+
+    // Cleanup listener
+    return () => {
+      editor.off("selectionUpdate", updateHeadingLevel);
+      editor.off("transaction", updateHeadingLevel);
     };
+  }, [editor]);
+
+  const setHeading = (level: string) => {
+    if (level === 'Paragraph') editor.chain().focus().setParagraph().run();
+    else if (level === 'Heading 1') editor.chain().focus().setHeading({ level: 1 }).run();
+    else if (level === 'Heading 2') editor.chain().focus().setHeading({ level: 2 }).run();
+    else if (level === 'Heading 3') editor.chain().focus().setHeading({ level: 3 }).run();
+    setHeadingLevel(level);
+  };
+
+  const buttonVariants = {
+    hover: { scale: 1.08, transition: { duration: 0.15 } },
+    tap: { scale: 0.92, transition: { duration: 0.1 } },
+  };
 
   const IconButton = ({ onClick, active, title, icon: Icon, custom, disabled = false }: {
     onClick: () => void;
@@ -150,141 +150,85 @@ const TOOLBAR_BUTTON_MAP = {
     return flowData;
   };
 
-    const openLinkModal = () => {
-      setLinkModalOpen(true);
-    };
+  const openLinkModal = () => {
+    setLinkModalOpen(true);
+  };
 
-    const handlePrint = () => {
-      window.print();
-    };
+  const handlePrint = () => {
+    window.print();
+  };
 
-    const handleDownload = () => {
-      const content = editor.getHTML();
-      const blob = new Blob([content], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'document.html';
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('Document downloaded!');
-    };
+  const handleDownload = () => {
+    const content = editor.getHTML();
+    const blob = new Blob([content], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'document.html';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Document downloaded!');
+  };
 
   const isButtonEnabled = (index: number) => {
     return settings.toolbar[index] !== false;
   };
 
-    // Open AIAnalysisModal with Analysis tab (triggered from AI dropdown)
-    const handleAnalyzeContent = async () => {
-      if (!editor) return;
+  // Open AIAnalysisModal with Analysis tab (triggered from AI dropdown)
+  const handleAnalyzeContent = async () => {
+    if (!editor) return;
 
-      setAnalyzing(true);
-      setAnalysisResult(null);
-      setAiModalTab('analysis');
-      setAiModalOpen(true);
+    setAnalyzing(true);
+    setAnalysisResult(null);
+    setAiModalTab('analysis');
+    setAiModalOpen(true);
 
-      try {
-        const textContent = editor.getText();
+    try {
+      const textContent = editor.getText();
 
-        if (!textContent.trim()) {
-          throw new Error('Document is empty');
-        }
-
-        const response = await fetch('/api/analyze-content', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            documentId,
-            content: textContent,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Analysis failed');
-        }
-
-        const result = await response.json();
-        setAnalysisResult(result);
-
-      } catch (error) {
-        console.error('AI analysis failed:', error);
-        toast.error('Failed to analyze content');
-      } finally {
-        setAnalyzing(false);
+      if (!textContent.trim()) {
+        throw new Error('Document is empty');
       }
-    };
 
-    // Open AIAnalysisModal with Humanize tab (triggered from toolbar)
-    const handleOpenHumanize = () => {
-      setAiModalTab('humanize');
-      setAiModalOpen(true);
-    };
+      const response = await fetch('/api/analyze-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId,
+          content: textContent,
+        }),
+      });
 
-    // Open AIAnalysisModal with Settings tab (triggered from toolbar)
-    const handleOpenSettings = () => {
-      setAiModalTab('settings');
-      setAiModalOpen(true);
-    };
+      if (!response.ok) {
+        throw new Error('Analysis failed');
+      }
 
-  const isButtonEnabled = (index: number) => {
-    return settings.toolbar[index] !== false;
+      const result = await response.json();
+      setAnalysisResult(result);
+
+    } catch (error) {
+      console.error('AI analysis failed:', error);
+      toast.error('Failed to analyze content');
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
-    // Open AIAnalysisModal with Analysis tab (triggered from AI dropdown)
-    const handleAnalyzeContent = async () => {
-      if (!editor) return;
+  // Open AIAnalysisModal with Humanize tab (triggered from toolbar)
+  const handleOpenHumanize = () => {
+    setAiModalTab('humanize');
+    setAiModalOpen(true);
+  };
 
-      setAnalyzing(true);
-      setAnalysisResult(null);
-      setAiModalTab('analysis');
-      setAiModalOpen(true);
+  // Open AIAnalysisModal with Settings tab (triggered from toolbar)
+  const handleOpenSettings = () => {
+    setAiModalTab('settings');
+    setAiModalOpen(true);
+  };
 
-      try {
-        const textContent = editor.getText();
+  console.log("Document Editor Toolbar", document)
 
-        if (!textContent.trim()) {
-          throw new Error('Document is empty');
-        }
-
-        const response = await fetch('/api/analyze-content', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            documentId,
-            content: textContent,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Analysis failed');
-        }
-
-        const result = await response.json();
-        setAnalysisResult(result);
-
-      } catch (error) {
-        console.error('AI analysis failed:', error);
-        toast.error('Failed to analyze content');
-      } finally {
-        setAnalyzing(false);
-      }
-    };
-
-    // Open AIAnalysisModal with Humanize tab (triggered from toolbar)
-    const handleOpenHumanize = () => {
-      setAiModalTab('humanize');
-      setAiModalOpen(true);
-    };
-
-    // Open AIAnalysisModal with Settings tab (triggered from toolbar)
-    const handleOpenSettings = () => {
-      setAiModalTab('settings');
-      setAiModalOpen(true);
-    };
-
-    console.log("Document Editor Toolbar", document)
-
-    if (!editor) return null;
+  if (!editor) return null;
 
   return (
     <>
@@ -324,28 +268,28 @@ const TOOLBAR_BUTTON_MAP = {
             />
           )}
           {isButtonEnabled(3) && (
-          <ColorPicker editor={editor} />
+            <ColorPicker editor={editor} />
           )}
         </div>
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
-          {/* 🤖 AI Menu Component */}
-          <AIMenu
-            editor={editor}
-            onAIStart={onAIStart}
-            onAIComplete={onAIComplete}
-            onAnalyzeContent={handleAnalyzeContent}
-          />
+        {/* 🤖 AI Menu Component */}
+        <AIMenu
+          editor={editor}
+          onAIStart={onAIStart}
+          onAIComplete={onAIComplete}
+          onAnalyzeContent={handleAnalyzeContent}
+        />
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
-          <ToolbarEmojiPicker editor={editor} />
+        <ToolbarEmojiPicker editor={editor} />
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
         {/* Headings */}
         <DropdownMenu>
@@ -372,8 +316,8 @@ const TOOLBAR_BUTTON_MAP = {
 
         <ToolbarEmojiPicker editor={editor} />
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
         {/* Lists / Block / Code */}
         <div className="flex items-center gap-1">
@@ -434,8 +378,8 @@ const TOOLBAR_BUTTON_MAP = {
           />
         </div>
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
         {/* Media & Extras */}
         <div className="flex items-center gap-1">
@@ -481,7 +425,7 @@ const TOOLBAR_BUTTON_MAP = {
 
         {/* Divider */}
         <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-          
+
         <div className="flex items-center gap-1">
           <IconButton
             icon={FaNetworkWired}
@@ -490,110 +434,107 @@ const TOOLBAR_BUTTON_MAP = {
           />
         </div>
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
-          {/* Undo / Redo */}
-          <div className="flex items-center gap-1">
-            <IconButton
-              icon={FaUndo}
-              title="Undo"
-              onClick={() => editor.chain().focus().undo().run()}
-              disabled={!editor.can().undo()}
-            />
-            <IconButton
-              icon={FaRedo}
-              title="Redo"
-              onClick={() => editor.chain().focus().redo().run()}
-              disabled={!editor.can().redo()}
-            />
-          </div>
-
-          {/* Divider */}
-          <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-
-          {/* Right Actions */}
-          <div className="flex items-center gap-1">
-            <IconButton
-              icon={FaEraser}
-              title="Clear Formatting"
-              onClick={() =>
-                editor.chain().focus().clearNodes().unsetAllMarks().run()
-              }
-            />
-            <IconButton icon={FaPrint} title="Print" custom="hidden lg:block" onClick={handlePrint} />
-            <IconButton icon={FaDownload} title="Download HTML" onClick={handleDownload} />
-            
-            {/* Humanize Content Button */}
-            <div className="relative">
-              <IconButton
-                icon={Wand2}
-                title="Humanize Content"
-                onClick={handleOpenHumanize}
-              />
-              <span className="absolute -top-1 -right-1.5 text-[8px] px-1.5 py-0.5
-                            rounded-full bg-gradient-to-r from-purple-500 to-indigo-500
-                            text-white font-bold">
-                PRO
-              </span>
-            </div>
-          </div>
+        {/* Undo / Redo */}
+        <div className="flex items-center gap-1">
+          <IconButton
+            icon={FaUndo}
+            title="Undo"
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+          />
+          <IconButton
+            icon={FaRedo}
+            title="Redo"
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+          />
         </div>
 
-        <LinkModal
-          editor={editor}
-          isOpen={linkModalOpen}
-          onClose={() => setLinkModalOpen(false)}
-        />
+        {/* Divider */}
+        <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
 
-        <ImageUploadModal
-          editor={editor}
-          documentId={documentId}
-          isOpen={imageModalOpen}
-          onClose={() => setImageModalOpen(false)}
-        />
+        {/* Right Actions */}
+        <div className="flex items-center gap-1">
+          <IconButton
+            icon={FaEraser}
+            title="Clear Formatting"
+            onClick={() =>
+              editor.chain().focus().clearNodes().unsetAllMarks().run()
+            }
+          />
+          <IconButton icon={FaPrint} title="Print" custom="hidden lg:block" onClick={handlePrint} />
+          <IconButton icon={FaDownload} title="Download HTML" onClick={handleDownload} />
 
-        <TableInsertModal
-          editor={editor}
-          isOpen={tableModalOpen}
-          onClose={() => setTableModalOpen(false)}
-        />
-
-        <AIAnalysisModal
-          isOpen={aiModalOpen}
-          onClose={() => {
-            setAiModalOpen(false);
-            setAnalysisResult(null);
-          }}
-          analysisResult={analysisResult}
-          documentId={documentId}
-          editor={editor}
-          defaultTab={aiModalTab}
-          showAnalysisTab={aiModalTab === 'analysis'}
-        />
-
-        {plan === "Basic" ? (
-          <>
-            <MediaLibraryModal
-              isOpen={mediaLibraryOpen}
-              onClose={() => setMediaLibraryOpen(false)}
-              documentId={documentId}
-              documentTitle={document.title}
-              editor={editor}
+          <div className="relative">
+            <IconButton
+              icon={Wand2}
+              title="Humanize Content"
+              onClick={handleOpenHumanize}
             />
-          </>
-        ) : (
-          <>
-            <MediaLibraryProModal
-              isOpen={mediaLibraryOpen}
-              onClose={() => setMediaLibraryOpen(false)}
-              documentId={documentId}
-              documentTitle={document.title}
-              collaborators={document.collaborators}
-              editor={editor}
-            />
-          </>)
-        }
+            <span className="absolute -top-1 -right-1.5 text-[8px] px-1.5 py-0.5 rounded-full bg-linear-to-r from-purple-500 to-indigo-500 text-white font-bold">
+              PRO
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <LinkModal
+        editor={editor}
+        isOpen={linkModalOpen}
+        onClose={() => setLinkModalOpen(false)}
+      />
+
+      <ImageUploadModal
+        editor={editor}
+        documentId={documentId}
+        isOpen={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+      />
+
+      <TableInsertModal
+        editor={editor}
+        isOpen={tableModalOpen}
+        onClose={() => setTableModalOpen(false)}
+      />
+
+      <AIAnalysisModal
+        isOpen={aiModalOpen}
+        onClose={() => {
+          setAiModalOpen(false);
+          setAnalysisResult(null);
+        }}
+        analysisResult={analysisResult}
+        documentId={documentId}
+        editor={editor}
+        defaultTab={aiModalTab}
+        showAnalysisTab={aiModalTab === 'analysis'}
+      />
+
+      {plan === "Basic" ? (
+        <>
+          <MediaLibraryModal
+            isOpen={mediaLibraryOpen}
+            onClose={() => setMediaLibraryOpen(false)}
+            documentId={documentId}
+            documentTitle={document.title}
+            editor={editor}
+          />
+        </>
+      ) : (
+        <>
+          <MediaLibraryProModal
+            isOpen={mediaLibraryOpen}
+            onClose={() => setMediaLibraryOpen(false)}
+            documentId={documentId}
+            documentTitle={document.title}
+            collaborators={document.collaborators}
+            editor={editor}
+          />
+        </>)
+      }
 
       <FlowDiagramModal
         isOpen={flowModalOpen}
@@ -633,6 +574,6 @@ const TOOLBAR_BUTTON_MAP = {
         }}
       />
 
-      </>
-    );
-  }
+    </>
+  );
+}

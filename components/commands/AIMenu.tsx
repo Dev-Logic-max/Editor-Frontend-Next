@@ -226,7 +226,7 @@ export function AIMenu({ editor, onAIStart, onAIComplete, onAnalyzeContent, comp
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm flex items-center gap-2">
                 AI Content Analysis
-                <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold">
+                <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-linear-to-r from-purple-500 to-indigo-500 text-white font-bold">
                   PRO
                 </span>
               </div>

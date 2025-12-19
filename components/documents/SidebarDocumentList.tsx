@@ -10,7 +10,6 @@ import { SettingsDocumentModal } from '@/components/documents/SettingsDocumentMo
 import { DeleteDocumentModal } from '@/components/documents/DeleteDocumentModal';
 import { EditDocumentModal } from '@/components/documents/EditDocumentModal';
 import { InviteModal } from '@/components/connection/InviteCollaboratorModal';
-import { AIAnalysisModal } from '@/components/documents/AIAnalysisModal';
 import { Badge } from '@/components/ui/badge';
 
 import { HiOutlineDocumentDuplicate, HiOutlineUserGroup } from 'react-icons/hi2';
@@ -19,12 +18,10 @@ import { RiDeleteBin6Line } from 'react-icons/ri';
 import { FaEllipsisV } from 'react-icons/fa';
 import { LuSettings } from 'react-icons/lu';
 import { TbEdit } from "react-icons/tb";
-import { BsStars } from "react-icons/bs";
 
 import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/hooks/useAuth';
-import { getDocument } from '@/lib/api/documents';
 
 export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean }) {
   const router = useRouter();
@@ -156,7 +153,6 @@ export function SidebarDocumentList({ isSidebar = false }: { isSidebar?: boolean
           onClose={() => setDeleteModalOpen(false)}
           onConfirm={handleDelete}
         />
-
       </div>
     );
   }

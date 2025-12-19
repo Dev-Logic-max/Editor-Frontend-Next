@@ -12,8 +12,8 @@ import { Label } from '@/components/ui/label';
 
 import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaStrikethrough, FaAlignJustify } from 'react-icons/fa';
 import { Network, Smile, Palette, Code, Strikethrough, LinkIcon, Underline, Italic, Bold, Sparkles, Heading, Info, Maximize, Type, FileText, LayoutTemplate, Sun, Moon } from 'lucide-react';
-import { BsBoxSeamFill } from "react-icons/bs";
 import { Save, RotateCcw, Check } from 'lucide-react';
+import { BsBoxSeamFill } from "react-icons/bs";
 
 import { EditorLayout, EditorTheme, useEditorSettings, type UISettingKey } from '@/hooks/useEditorSettings';
 
@@ -80,8 +80,7 @@ interface DocumentSettingsModalProps {
 export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModalProps) {
   const { settings, updateSetting, resetToDefault } = useEditorSettings();
   const [activeToolbarView, setActiveToolbarView] = useState<'main' | 'floating'>('main');
-  
-  // ✅ State for selected model
+
   const [selectedModel, setSelectedModel] = useState<string>(
     () => localStorage.getItem('selectedAIModel') || 'pollinations-flux'
   );
@@ -94,12 +93,12 @@ export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModal
     onClose();
   };
 
-const handleReset = () => {
-  resetToDefault();
-  setSelectedModel('pollinations-flux');
-  localStorage.setItem('selectedAIModel', 'pollinations-flux');
-  toast.success('Settings reset to default');
-};
+  const handleReset = () => {
+    resetToDefault();
+    setSelectedModel('pollinations-flux');
+    localStorage.setItem('selectedAIModel', 'pollinations-flux');
+    toast.success('Settings reset to default');
+  };
 
 
   const UIToggle = ({ keyName, label }: { keyName: UISettingKey; label: string }) => (
@@ -124,9 +123,6 @@ const handleReset = () => {
 
         <Tabs defaultValue="toolbar">
           <TabsList className="grid grid-cols-4 w-full rounded-xl border bg-white/80 backdrop-blur-sm shadow-md">
-            <TabsTrigger value="model" className="data-[state=active]:bg-linear-to-br data-[state=active]:from-pink-400 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-lg">
-              Choose Model
-            </TabsTrigger>
             <TabsTrigger value="toolbar" className="data-[state=active]:bg-linear-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg">
               Toolbar
             </TabsTrigger>
@@ -136,61 +132,10 @@ const handleReset = () => {
             <TabsTrigger value="appearance" className="data-[state=active]:bg-linear-to-br data-[state=active]:from-amber-500 data-[state=active]:to-orange-600 data-[state=active]:text-white rounded-lg">
               Appearance
             </TabsTrigger>
+            <TabsTrigger value="model" className="data-[state=active]:bg-linear-to-br data-[state=active]:from-pink-400 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-lg">
+              Choose Model
+            </TabsTrigger>
           </TabsList>
-
-          {/* ✅ UPDATED Model Selection Tab */}
-          <TabsContent value="model" className="mt-4 space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-slate-700 text-lg">Select Image Model</h4>
-              <Badge variant="secondary" className="text-xs">
-                Selected: {availableImageModels.find(m => m.id === selectedModel)?.name}
-              </Badge>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {availableImageModels.map((model) => {
-                const isSelected = selectedModel === model.id;
-                
-                return (
-                  <div
-                    key={model.id}
-                    onClick={() => setSelectedModel(model.id)}
-                    className={`
-                      relative p-4 border-2 rounded-lg cursor-pointer transition-all
-                      ${isSelected 
-                        ? 'border-indigo-500 bg-indigo-50 shadow-md' 
-                        : 'border-gray-200 hover:border-indigo-300 bg-white'
-                      }
-                    `}
-                  >
-                    {/* ✅ Checkmark for selected model */}
-                    {isSelected && (
-                      <div className="absolute top-2 right-2 bg-indigo-500 text-white rounded-full p-1">
-                        <Check className="w-4 h-4" />
-                      </div>
-                    )}
-                    
-                    <div className="flex justify-between items-center mb-2">
-                      <h5 className="font-semibold text-slate-800">{model.name}</h5>
-                      <Badge className={`text-xs ${isSelected ? 'bg-indigo-500 text-white' : ''}`}>
-                        {model.cost}
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 mb-1">{model.description}</p>
-                    <p className="text-xs text-gray-400">Provider: {model.provider}</p>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* ✅ Model Info */}
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>💡 Tip:</strong> Free models are great for testing. Premium models offer better quality but require API keys.
-              </p>
-            </div>
-          </TabsContent>
 
           {/* Toolbar */}
           <TabsContent value="toolbar" className="mt-4 space-y-6">
@@ -564,8 +509,8 @@ const handleReset = () => {
                 <div
                   onClick={() => updateSetting('appearance', 'layout', EditorLayout.Document)}
                   className={`relative border-2 rounded-xl p-2 lg:p-4 cursor-pointer transition-all ${settings.appearance.layout === EditorLayout.Document
-                      ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                      : 'border-gray-200 hover:border-indigo-300 hover:shadow-sm'
+                    ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                    : 'border-gray-200 hover:border-indigo-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -598,8 +543,8 @@ const handleReset = () => {
                 <div
                   onClick={() => updateSetting('appearance', 'layout', EditorLayout.Editor)}
                   className={`relative border-2 rounded-xl p-2 lg:p-4 cursor-pointer transition-all ${settings.appearance.layout === EditorLayout.Editor
-                      ? 'border-purple-500 bg-purple-50 shadow-md'
-                      : 'border-gray-200 hover:border-purple-300 hover:shadow-sm'
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-gray-200 hover:border-purple-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -645,8 +590,8 @@ const handleReset = () => {
                 <div
                   onClick={() => updateSetting('appearance', 'theme', EditorTheme.Light)}
                   className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${settings.appearance.theme === EditorTheme.Light
-                      ? 'border-yellow-500 bg-yellow-50 shadow-md'
-                      : 'border-gray-200 hover:border-yellow-300 hover:shadow-sm'
+                    ? 'border-yellow-500 bg-yellow-50 shadow-md'
+                    : 'border-gray-200 hover:border-yellow-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -678,8 +623,8 @@ const handleReset = () => {
                 <div
                   onClick={() => updateSetting('appearance', 'theme', EditorTheme.Dark)}
                   className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${settings.appearance.theme === EditorTheme.Dark
-                      ? 'border-slate-500 bg-slate-50 shadow-md'
-                      : 'border-gray-200 hover:border-slate-300 hover:shadow-sm'
+                    ? 'border-slate-500 bg-slate-50 shadow-md'
+                    : 'border-gray-200 hover:border-slate-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -745,6 +690,58 @@ const handleReset = () => {
               <p className="text-xs lg:text-sm text-blue-800">
                 Your appearance settings are saved automatically and will persist across all your editing sessions.
                 Dark theme support is currently in development and will be available soon!
+              </p>
+            </div>
+          </TabsContent>
+
+          {/* Models Tab */}
+          <TabsContent value="model" className="mt-4 space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium text-slate-700 text-lg">Select Image Model</h4>
+              <Badge variant="secondary" className="text-xs">
+                Selected: {availableImageModels.find(m => m.id === selectedModel)?.name}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {availableImageModels.map((model) => {
+                const isSelected = selectedModel === model.id;
+
+                return (
+                  <div
+                    key={model.id}
+                    onClick={() => setSelectedModel(model.id)}
+                    className={`
+                      relative p-4 border-2 rounded-lg cursor-pointer transition-all
+                      ${isSelected
+                        ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                        : 'border-gray-200 hover:border-indigo-300 bg-white'
+                      }
+                    `}
+                  >
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 bg-indigo-500 text-white rounded-full p-1">
+                        <Check className="w-4 h-4" />
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center mb-2">
+                      <h5 className="font-semibold text-slate-800">{model.name}</h5>
+                      <Badge className={`text-xs ${isSelected ? 'bg-indigo-500 text-white' : ''}`}>
+                        {model.cost}
+                      </Badge>
+                    </div>
+
+                    <p className="text-sm text-gray-600 mb-1">{model.description}</p>
+                    <p className="text-xs text-gray-400">Provider: {model.provider}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Tip:</strong> Free models are great for testing. Premium models offer better quality but require API keys.
               </p>
             </div>
           </TabsContent>
