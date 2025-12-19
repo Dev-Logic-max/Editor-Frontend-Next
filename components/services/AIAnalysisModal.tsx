@@ -1,30 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import {
-  BsStars,
-  BsCheckCircle,
-  BsExclamationTriangle,
-  BsLightbulb,
-} from 'react-icons/bs';
-import { Loader2, Wand2, Info, TrendingDown, TrendingUp, Settings } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-/* -------------------------------------------------
-   Types
-------------------------------------------------- */
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+
+import { BsStars, BsCheckCircle, BsExclamationTriangle, BsLightbulb } from 'react-icons/bs';
+import { Loader2, Wand2, Info, TrendingDown, TrendingUp, Settings } from 'lucide-react';
+
 interface AIAnalysisResult {
   aiPercentage: number;
   humanPercentage?: number;
@@ -44,9 +29,6 @@ interface AIAnalysisModalProps {
   showAnalysisTab?: boolean;
 }
 
-/* -------------------------------------------------
-   Component
-------------------------------------------------- */
 export function AIAnalysisModal({
   isOpen,
   onClose,
@@ -199,7 +181,6 @@ export function AIAnalysisModal({
     }
   };
 
-
   /* ---------- Accept humanized content ---------- */
   const handleAccept = () => {
     if (!editor || !humanizedContent) return;
@@ -247,17 +228,17 @@ export function AIAnalysisModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="min-w-6xl min-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full lg:min-w-6xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg">
+            <div className="p-2 bg-linear-to-br from-purple-500 to-indigo-600 rounded-lg">
               <BsStars className="w-6 h-6 text-white" />
             </div>
-            <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
               {showAnalysisTab ? 'AI Content Analysis' : 'AI Content Tools'}
             </span>
-            <Badge className="ml-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-semibold px-3 py-1">
+            <Badge className="ml-2 bg-linear-to-r from-purple-500 to-indigo-500 text-white text-xs font-semibold px-3 py-1">
               Pro
             </Badge>
           </DialogTitle>
@@ -312,7 +293,7 @@ export function AIAnalysisModal({
             {showAnalysisTab && analysisResult && (
               <TabsContent value="analysis" className="space-y-6 py-6">
                 {/* Score Card */}
-                <div className={`p-8 rounded-2xl bg-gradient-to-br ${getScoreColor(analysisResult.aiPercentage)} border-2 border-white shadow-lg space-y-6`}>
+                <div className={`p-8 rounded-2xl bg-linear-to-br ${getScoreColor(analysisResult.aiPercentage)} border-2 border-white shadow-lg space-y-6`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-4">
                       {getScoreIcon(analysisResult.aiPercentage)}
@@ -328,13 +309,13 @@ export function AIAnalysisModal({
 
                     <div className="flex gap-3">
                       <div className="text-center">
-                        <Badge className="bg-gradient-to-br from-rose-500 to-red-600 text-white px-4 py-2 rounded-xl text-lg font-bold shadow-md">
+                        <Badge className="bg-linear-to-br from-rose-500 to-red-600 text-white px-4 py-2 rounded-xl text-lg font-bold shadow-md">
                           {analysisResult.aiPercentage}%
                         </Badge>
                         <p className="text-xs text-gray-600 mt-1 font-medium">AI Content</p>
                       </div>
                       <div className="text-center">
-                        <Badge className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-xl text-lg font-bold shadow-md">
+                        <Badge className="bg-linear-to-br from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-xl text-lg font-bold shadow-md">
                           {humanPct}%
                         </Badge>
                         <p className="text-xs text-gray-600 mt-1 font-medium">Human</p>
@@ -354,7 +335,7 @@ export function AIAnalysisModal({
                       </div>
                       <div className="w-full h-4 bg-white/50 rounded-full overflow-hidden shadow-inner">
                         <div
-                          className="h-4 rounded-full bg-gradient-to-r from-rose-500 to-red-600 transition-all duration-1000 shadow-sm"
+                          className="h-4 rounded-full bg-linear-to-r from-rose-500 to-red-600 transition-all duration-1000 shadow-sm"
                           style={{ width: `${analysisResult.aiPercentage}%` }}
                         />
                       </div>
@@ -370,7 +351,7 @@ export function AIAnalysisModal({
                       </div>
                       <div className="w-full h-4 bg-white/50 rounded-full overflow-hidden shadow-inner">
                         <div
-                          className="h-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 transition-all duration-1000 shadow-sm"
+                          className="h-4 rounded-full bg-linear-to-r from-emerald-500 to-teal-600 transition-all duration-1000 shadow-sm"
                           style={{ width: `${humanPct}%` }}
                         />
                       </div>
@@ -380,15 +361,15 @@ export function AIAnalysisModal({
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-white shadow-md">
+                  <div className="p-6 bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-white shadow-md">
                     <p className="text-sm text-gray-600 mb-2 font-medium">Word Count</p>
                     <p className="text-3xl font-bold text-indigo-700">{analysisResult.wordCount.toLocaleString()}</p>
                   </div>
-                  <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-white shadow-md">
+                  <div className="p-6 bg-linear-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-white shadow-md">
                     <p className="text-sm text-gray-600 mb-2 font-medium">Analysis Date</p>
                     <p className="text-sm font-bold text-purple-700">{new Date(analysisResult.analysisDate).toLocaleDateString()}</p>
                   </div>
-                  <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-white shadow-md">
+                  <div className="p-6 bg-linear-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-white shadow-md">
                     <p className="text-sm text-gray-600 mb-2 font-medium">Confidence</p>
                     <p className="text-3xl font-bold text-amber-700">High</p>
                   </div>
@@ -398,7 +379,7 @@ export function AIAnalysisModal({
                 {analysisResult.suggestions.length > 0 && (
                   <div className="space-y-4">
                     <h4 className="font-bold text-xl flex items-center gap-3 text-gray-800">
-                      <div className="p-2 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg">
+                      <div className="p-2 bg-linear-to-br from-amber-400 to-orange-500 rounded-lg">
                         <BsLightbulb className="w-5 h-5 text-white" />
                       </div>
                       Improvement Suggestions
@@ -426,7 +407,7 @@ export function AIAnalysisModal({
               <div className="space-y-6">
                 {/* Original Content */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <Info className="w-4 h-4 text-blue-600" />
                     {originalContent !== editor?.getText() ? 'Selected Text' : 'Document Content'}
                   </label>
@@ -443,11 +424,11 @@ export function AIAnalysisModal({
                     {originalContent.length}/{HUMANIZE_CHAR_LIMIT} characters
                     {originalContent.length > HUMANIZE_CHAR_LIMIT && ' - Limit exceeded!'}
                   </p>
-                        {originalContent.length > HUMANIZE_CHAR_LIMIT && (
-        <p className="text-sm text-gray-600 mt-1">
-          Character limit exceeded! You can also select a snippet to humanize a particular part of your text.
-        </p>
-      )}
+                  {originalContent.length > HUMANIZE_CHAR_LIMIT && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      Character limit exceeded! You can also select a snippet to humanize a particular part of your text.
+                    </p>
+                  )}
                 </div>
 
                 {/* Humanize Button */}
@@ -456,7 +437,7 @@ export function AIAnalysisModal({
                     disabled={isRemoving || originalContent.length > HUMANIZE_CHAR_LIMIT}
                     onClick={handleHumanizeContent}
                     className="w-full py-4 rounded-xl font-bold text-lg
-                   bg-gradient-to-r from-purple-600 to-indigo-600 
+                   bg-linear-to-r from-purple-600 to-indigo-600 
                    text-white flex items-center justify-center gap-3 
                    shadow-lg hover:shadow-xl hover:from-purple-700 hover:to-indigo-700
                    transition-all duration-300 transform hover:scale-[1.02]
@@ -480,7 +461,7 @@ export function AIAnalysisModal({
                 {showHumanized && (
                   <>
                     <div>
-                      <label className="block text-sm font-semibold text-purple-700 mb-2 flex items-center gap-2">
+                      <label className="text-sm font-semibold text-purple-700 mb-2 flex items-center gap-2">
                         <BsStars className="w-4 h-4" />
                         Humanized Content
                       </label>
@@ -498,28 +479,21 @@ export function AIAnalysisModal({
                     <div className="grid grid-cols-3 gap-3">
                       <button
                         onClick={handleReject}
-                        className="py-3 rounded-xl font-semibold
-                     bg-gray-100 text-gray-700
-                     hover:bg-gray-200
-                     transition-all duration-200"
+                        className="py-3 rounded-xl font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
                       >
                         Reject
                       </button>
                       <button
                         onClick={handleTryBetter}
                         disabled={isRemoving}
-                        className="py-3 rounded-xl font-semibold
-                     bg-amber-100 text-amber-700
-                     hover:bg-amber-200
-                     transition-all duration-200
-                     disabled:opacity-50"
+                        className="py-3 rounded-xl font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all duration-200 disabled:opacity-50"
                       >
                         {isRemoving ? 'Processing...' : 'Try Better'}
                       </button>
                       <button
                         onClick={handleAccept}
                         className="py-3 rounded-xl font-semibold
-                     bg-gradient-to-r from-green-600 to-emerald-600
+                     bg-linear-to-r from-green-600 to-emerald-600
                      text-white
                      hover:from-green-700 hover:to-emerald-700
                      transition-all duration-200 transform hover:scale-[1.02]"
@@ -547,8 +521,8 @@ export function AIAnalysisModal({
                       <label
                         key={model.id}
                         className={`flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedModel === model.id
-                            ? 'bg-white border-purple-500 shadow-md'
-                            : 'bg-white/50 border-gray-200 hover:border-purple-300'
+                          ? 'bg-white border-purple-500 shadow-md'
+                          : 'bg-white/50 border-gray-200 hover:border-purple-300'
                           }`}
                       >
                         <input
@@ -577,7 +551,7 @@ export function AIAnalysisModal({
                 {/* Info Box */}
                 <div className="p-6 rounded-xl bg-blue-50 border-2 border-blue-100">
                   <div className="flex items-start gap-3">
-                    <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
                     <div>
                       <p className="text-sm font-semibold text-blue-900 mb-1">About AI Models</p>
                       <p className="text-sm text-blue-700">

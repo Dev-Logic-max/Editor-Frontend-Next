@@ -13,7 +13,7 @@ import { LinkModal } from '@/components/services/LinkModal';
 import { ColorPicker } from '@/components/services/ColorPicker';
 import { FlowDiagramModal } from '@/components/links/FlowDiagramModal';
 import { MediaLibraryModal } from '@/components/media/MediaLibraryModal';
-import { AIAnalysisModal } from '@/components/documents/AIAnalysisModal';
+import { AIAnalysisModal } from '@/components/services/AIAnalysisModal';
 import { ImageUploadModal } from '@/components/services/ImageUploadModal';
 import { TableInsertModal } from '@/components/services/TableInsertModal';
 import { ToolbarEmojiPicker } from '@/components/common/ToolbarEmojiPicker';
