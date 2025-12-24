@@ -11,11 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 
 import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaHeading, FaQuoteRight, FaCode, FaRobot, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaStrikethrough, FaAlignJustify } from 'react-icons/fa';
-import { Network, Smile, Palette, Code, Strikethrough, LinkIcon, Underline, Italic, Bold, Sparkles, Heading, Info, Maximize, Type, FileText, LayoutTemplate, Sun, Moon } from 'lucide-react';
+import { Network, Smile, Palette, Code, Strikethrough, LinkIcon, Underline, Italic, Bold, Sparkles, Heading, Info, Maximize, Type, FileText, LayoutTemplate, Sun, Moon, Ratio, Shapes } from 'lucide-react';
 import { BsBoxSeamFill } from "react-icons/bs";
 import { Save, RotateCcw } from 'lucide-react';
 
-import { EditorLayout, EditorTheme, useEditorSettings, type UISettingKey } from '@/hooks/useEditorSettings';
+import { BorderRadius, ButtonSize, EditorLayout, EditorTheme, ToolbarBgColor, useEditorSettings, type UISettingKey } from '@/hooks/useEditorSettings';
+import { MdOutlineDocumentScanner } from 'react-icons/md';
 
 const mainToolbarItems = [
   { id: 'bold', label: 'Bold', icon: FaBold },
@@ -39,6 +40,7 @@ const mainToolbarItems = [
   { id: 'table', label: 'Table', icon: FaTable },
   { id: 'mediaLibrary', label: 'Media Library', icon: BsBoxSeamFill },
   { id: 'flowDiagram', label: 'Flow Diagram', icon: Network },
+  { id: 'AIAnalysis', label: 'AI Document Analysis', icon: MdOutlineDocumentScanner },
   { id: 'undo', label: 'Undo', icon: FaUndo },
   { id: 'redo', label: 'Redo', icon: FaRedo },
   { id: 'clear', label: 'Clear Format', icon: FaEraser },
@@ -471,6 +473,386 @@ export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModal
               <Badge variant="secondary">Customize your workspace</Badge>
             </div>
 
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+                <Ratio className="w-4 h-4" />
+                Button Size
+                <Badge variant="secondary">{settings.appearance.buttonSize}</Badge>
+              </h4>
+
+              <p className="text-xs text-gray-600">
+                Choose the size of toolbar buttons. Smaller sizes fit more buttons on screen.
+              </p>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                {/* Extra Small */}
+                <div
+                  onClick={() => updateSetting('appearance', 'buttonSize', ButtonSize.ExtraSmall)}
+                  className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${settings.appearance.buttonSize === ButtonSize.ExtraSmall
+                    ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                    : 'border-gray-200 hover:border-indigo-300 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-1 mb-2">
+                      <div className="w-6 h-6 bg-indigo-200 rounded flex items-center justify-center">
+                        <FaBold className="w-3 h-3 text-indigo-700" />
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-800">Extra Small</span>
+                    <span className="text-[10px] text-gray-500 font-mono">24px × 24px</span>
+                    {settings.appearance.buttonSize === ButtonSize.ExtraSmall && (
+                      <Badge className="bg-indigo-600 text-white text-xs">Active</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Small */}
+                <div
+                  onClick={() => updateSetting('appearance', 'buttonSize', ButtonSize.Small)}
+                  className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${settings.appearance.buttonSize === ButtonSize.Small
+                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                    : 'border-gray-200 hover:border-blue-300 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-1 mb-2">
+                      <div className="w-7 h-7 bg-blue-200 rounded flex items-center justify-center">
+                        <FaBold className="w-3.5 h-3.5 text-blue-700" />
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-800">Small</span>
+                    <span className="text-[10px] text-gray-500 font-mono">28px × 28px</span>
+                    {settings.appearance.buttonSize === ButtonSize.Small && (
+                      <Badge className="bg-blue-600 text-white text-xs">Active</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Medium */}
+                <div
+                  onClick={() => updateSetting('appearance', 'buttonSize', ButtonSize.Medium)}
+                  className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${settings.appearance.buttonSize === ButtonSize.Medium
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-gray-200 hover:border-purple-300 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-1 mb-2">
+                      <div className="w-8 h-8 bg-purple-200 rounded flex items-center justify-center">
+                        <FaBold className="w-4 h-4 text-purple-700" />
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-800">Medium</span>
+                    <span className="text-[10px] text-gray-500 font-mono">32px × 32px</span>
+                    {settings.appearance.buttonSize === ButtonSize.Medium ? (
+                      <Badge className="bg-purple-600 text-white text-xs">Active</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] text-purple-600 border-purple-300">
+                        Default
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Large */}
+                <div
+                  onClick={() => updateSetting('appearance', 'buttonSize', ButtonSize.Large)}
+                  className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${settings.appearance.buttonSize === ButtonSize.Large
+                    ? 'border-green-500 bg-green-50 shadow-md'
+                    : 'border-gray-200 hover:border-green-300 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-1 mb-2">
+                      <div className="w-10 h-10 bg-green-200 rounded flex items-center justify-center">
+                        <FaBold className="w-5 h-5 text-green-700" />
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-800">Large</span>
+                    <span className="text-[10px] text-gray-500 font-mono">40px × 40px</span>
+                    {settings.appearance.buttonSize === ButtonSize.Large && (
+                      <Badge className="bg-green-600 text-white text-xs">Active</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Toolbar Background Color */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Toolbar Background Color
+                <Badge variant="secondary">{settings.appearance.toolbarBgColor}</Badge>
+              </h4>
+
+              <p className="text-xs text-gray-600">
+                Choose a background color for your toolbar to match your workspace style.
+              </p>
+
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3">
+                {/* White */}
+                <div
+                  onClick={() => updateSetting('appearance', 'toolbarBgColor', ToolbarBgColor.White)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.toolbarBgColor === ToolbarBgColor.White
+                    ? 'border-gray-500 shadow-md ring-2 ring-gray-300'
+                    : 'border-gray-200 hover:border-gray-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-white border-2 border-gray-300 rounded-lg shadow-sm"></div>
+                    <span className="text-xs font-semibold text-gray-800">White</span>
+                    {settings.appearance.toolbarBgColor === ToolbarBgColor.White && (
+                      <Badge className="bg-gray-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Gray */}
+                <div
+                  onClick={() => updateSetting('appearance', 'toolbarBgColor', ToolbarBgColor.Gray)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.toolbarBgColor === ToolbarBgColor.Gray
+                    ? 'border-gray-500 shadow-md ring-2 ring-gray-300'
+                    : 'border-gray-200 hover:border-gray-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-gray-100 border-2 border-gray-300 rounded-lg shadow-sm"></div>
+                    <span className="text-xs font-semibold text-gray-800">Gray</span>
+                    {settings.appearance.toolbarBgColor === ToolbarBgColor.Gray && (
+                      <Badge className="bg-gray-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Blue */}
+                <div
+                  onClick={() => updateSetting('appearance', 'toolbarBgColor', ToolbarBgColor.Blue)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.toolbarBgColor === ToolbarBgColor.Blue
+                    ? 'border-blue-500 shadow-md ring-2 ring-blue-300'
+                    : 'border-gray-200 hover:border-blue-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-blue-50 border-2 border-blue-300 rounded-lg shadow-sm"></div>
+                    <span className="text-xs font-semibold text-gray-800">Blue</span>
+                    {settings.appearance.toolbarBgColor === ToolbarBgColor.Blue && (
+                      <Badge className="bg-blue-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Purple */}
+                <div
+                  onClick={() => updateSetting('appearance', 'toolbarBgColor', ToolbarBgColor.Purple)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.toolbarBgColor === ToolbarBgColor.Purple
+                    ? 'border-purple-500 shadow-md ring-2 ring-purple-300'
+                    : 'border-gray-200 hover:border-purple-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-purple-50 border-2 border-purple-300 rounded-lg shadow-sm"></div>
+                    <span className="text-xs font-semibold text-gray-800">Purple</span>
+                    {settings.appearance.toolbarBgColor === ToolbarBgColor.Purple && (
+                      <Badge className="bg-purple-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Green */}
+                <div
+                  onClick={() => updateSetting('appearance', 'toolbarBgColor', ToolbarBgColor.Green)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.toolbarBgColor === ToolbarBgColor.Green
+                    ? 'border-green-500 shadow-md ring-2 ring-green-300'
+                    : 'border-gray-200 hover:border-green-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-green-50 border-2 border-green-300 rounded-lg shadow-sm"></div>
+                    <span className="text-xs font-semibold text-gray-800">Green</span>
+                    {settings.appearance.toolbarBgColor === ToolbarBgColor.Green && (
+                      <Badge className="bg-green-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Amber */}
+                <div
+                  onClick={() => updateSetting('appearance', 'toolbarBgColor', ToolbarBgColor.Amber)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.toolbarBgColor === ToolbarBgColor.Amber
+                    ? 'border-amber-500 shadow-md ring-2 ring-amber-300'
+                    : 'border-gray-200 hover:border-amber-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-amber-50 border-2 border-amber-300 rounded-lg shadow-sm"></div>
+                    <span className="text-xs font-semibold text-gray-800">Amber</span>
+                    {settings.appearance.toolbarBgColor === ToolbarBgColor.Amber && (
+                      <Badge className="bg-amber-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Rose */}
+                <div
+                  onClick={() => updateSetting('appearance', 'toolbarBgColor', ToolbarBgColor.Rose)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.toolbarBgColor === ToolbarBgColor.Rose
+                    ? 'border-rose-500 shadow-md ring-2 ring-rose-300'
+                    : 'border-gray-200 hover:border-rose-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-rose-50 border-2 border-rose-300 rounded-lg shadow-sm"></div>
+                    <span className="text-xs font-semibold text-gray-800">Rose</span>
+                    {settings.appearance.toolbarBgColor === ToolbarBgColor.Rose && (
+                      <Badge className="bg-rose-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Border Radius */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+                <Shapes className="w-4 h-4" />
+                Border Radius
+                <Badge variant="secondary">rounded-{settings.appearance.borderRadius}</Badge>
+              </h4>
+
+              <p className="text-xs text-gray-600">
+                Adjust the roundness of toolbar corners and buttons.
+              </p>
+
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3">
+                <div
+                  onClick={() => updateSetting('appearance', 'borderRadius', BorderRadius.None)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.borderRadius === BorderRadius.None
+                    ? 'border-indigo-500 shadow-md ring-2 ring-indigo-300'
+                    : 'border-gray-200 hover:border-indigo-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-linear-to-br from-indigo-100 to-indigo-200 border-2 border-indigo-400 rounded-none"></div>
+                    <span className="text-xs font-semibold text-gray-800">None</span>
+                    <span className="text-[9px] text-gray-500">0px</span>
+                    {settings.appearance.borderRadius === BorderRadius.None && (
+                      <Badge className="bg-indigo-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Small */}
+                <div
+                  onClick={() => updateSetting('appearance', 'borderRadius', BorderRadius.Small)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.borderRadius === BorderRadius.Small
+                    ? 'border-blue-500 shadow-md ring-2 ring-blue-300'
+                    : 'border-gray-200 hover:border-blue-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-linear-to-br from-blue-100 to-blue-200 border-2 border-blue-400 rounded-sm"></div>
+                    <span className="text-xs font-semibold text-gray-800">Small</span>
+                    <span className="text-[9px] text-gray-500">2px</span>
+                    {settings.appearance.borderRadius === BorderRadius.Small && (
+                      <Badge className="bg-blue-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Medium */}
+                <div
+                  onClick={() => updateSetting('appearance', 'borderRadius', BorderRadius.Medium)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.borderRadius === BorderRadius.Medium
+                    ? 'border-purple-500 shadow-md ring-2 ring-purple-300'
+                    : 'border-gray-200 hover:border-purple-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-linear-to-br from-purple-100 to-purple-200 border-2 border-purple-400 rounded-md"></div>
+                    <span className="text-xs font-semibold text-gray-800">Medium</span>
+                    <span className="text-[9px] text-gray-500">6px</span>
+                    {settings.appearance.borderRadius === BorderRadius.Medium && (
+                      <Badge className="bg-purple-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Large */}
+                <div
+                  onClick={() => updateSetting('appearance', 'borderRadius', BorderRadius.Large)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.borderRadius === BorderRadius.Large
+                    ? 'border-green-500 shadow-md ring-2 ring-green-300'
+                    : 'border-gray-200 hover:border-green-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-linear-to-br from-green-100 to-green-200 border-2 border-green-400 rounded-lg"></div>
+                    <span className="text-xs font-semibold text-gray-800">Large</span>
+                    <span className="text-[9px] text-gray-500">8px</span>
+                    {settings.appearance.borderRadius === BorderRadius.Large && (
+                      <Badge className="bg-green-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Extra Large */}
+                <div
+                  onClick={() => updateSetting('appearance', 'borderRadius', BorderRadius.ExtraLarge)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.borderRadius === BorderRadius.ExtraLarge
+                    ? 'border-amber-500 shadow-md ring-2 ring-amber-300'
+                    : 'border-gray-200 hover:border-amber-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-linear-to-br from-amber-100 to-amber-200 border-2 border-amber-400 rounded-xl"></div>
+                    <span className="text-xs font-semibold text-gray-800">XL</span>
+                    <span className="text-[9px] text-gray-500">12px</span>
+                    {settings.appearance.borderRadius === BorderRadius.ExtraLarge && (
+                      <Badge className="bg-amber-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2XL */}
+                <div
+                  onClick={() => updateSetting('appearance', 'borderRadius', BorderRadius.ExtraLarge2)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.borderRadius === BorderRadius.ExtraLarge2
+                    ? 'border-rose-500 shadow-md ring-2 ring-rose-300'
+                    : 'border-gray-200 hover:border-rose-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-linear-to-br from-rose-100 to-rose-200 border-2 border-rose-400 rounded-2xl"></div>
+                    <span className="text-xs font-semibold text-gray-800">2XL</span>
+                    <span className="text-[9px] text-gray-500">16px</span>
+                    {settings.appearance.borderRadius === BorderRadius.ExtraLarge2 && (
+                      <Badge className="bg-rose-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Full */}
+                <div
+                  onClick={() => updateSetting('appearance', 'borderRadius', BorderRadius.Full)}
+                  className={`relative border-2 rounded-xl p-3 cursor-pointer transition-all ${settings.appearance.borderRadius === BorderRadius.Full
+                    ? 'border-pink-500 shadow-md ring-2 ring-pink-300'
+                    : 'border-gray-200 hover:border-pink-400 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-linear-to-br from-pink-100 to-pink-200 border-2 border-pink-400 rounded-full"></div>
+                    <span className="text-xs font-semibold text-gray-800">Full</span>
+                    <span className="text-[9px] text-gray-500">∞</span>
+                    {settings.appearance.borderRadius === BorderRadius.Full && (
+                      <Badge className="bg-pink-600 text-white text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Layout Selection */}
             <div className="space-y-3">
               <h4 className="font-semibold text-gray-800 flex items-center gap-2">
@@ -486,8 +868,8 @@ export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModal
                 <div
                   onClick={() => updateSetting('appearance', 'layout', EditorLayout.Document)}
                   className={`relative border-2 rounded-xl p-2 lg:p-4 cursor-pointer transition-all ${settings.appearance.layout === EditorLayout.Document
-                      ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                      : 'border-gray-200 hover:border-indigo-300 hover:shadow-sm'
+                    ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                    : 'border-gray-200 hover:border-indigo-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -520,8 +902,8 @@ export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModal
                 <div
                   onClick={() => updateSetting('appearance', 'layout', EditorLayout.Editor)}
                   className={`relative border-2 rounded-xl p-2 lg:p-4 cursor-pointer transition-all ${settings.appearance.layout === EditorLayout.Editor
-                      ? 'border-purple-500 bg-purple-50 shadow-md'
-                      : 'border-gray-200 hover:border-purple-300 hover:shadow-sm'
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-gray-200 hover:border-purple-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -567,8 +949,8 @@ export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModal
                 <div
                   onClick={() => updateSetting('appearance', 'theme', EditorTheme.Light)}
                   className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${settings.appearance.theme === EditorTheme.Light
-                      ? 'border-yellow-500 bg-yellow-50 shadow-md'
-                      : 'border-gray-200 hover:border-yellow-300 hover:shadow-sm'
+                    ? 'border-yellow-500 bg-yellow-50 shadow-md'
+                    : 'border-gray-200 hover:border-yellow-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -600,8 +982,8 @@ export function SettingsDocumentModal({ isOpen, onClose }: DocumentSettingsModal
                 <div
                   onClick={() => updateSetting('appearance', 'theme', EditorTheme.Dark)}
                   className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${settings.appearance.theme === EditorTheme.Dark
-                      ? 'border-slate-500 bg-slate-50 shadow-md'
-                      : 'border-gray-200 hover:border-slate-300 hover:shadow-sm'
+                    ? 'border-slate-500 bg-slate-50 shadow-md'
+                    : 'border-gray-200 hover:border-slate-300 hover:shadow-sm'
                     }`}
                 >
                   <div className="flex items-start justify-between mb-3">

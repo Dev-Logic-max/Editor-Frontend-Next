@@ -2,6 +2,33 @@
 
 import { useState, useEffect } from 'react';
 
+export enum ButtonSize {
+  ExtraSmall = 'extra-small',
+  Small = 'small',
+  Medium = 'medium',
+  Large = 'large',
+}
+
+export enum BorderRadius {
+  None = 'none',
+  Small = 'sm',
+  Medium = 'md',
+  Large = 'lg',
+  ExtraLarge = 'xl',
+  ExtraLarge2 = '2xl',
+  Full = 'full',
+}
+
+export enum ToolbarBgColor {
+  White = 'white',
+  Gray = 'gray',
+  Blue = 'blue',
+  Purple = 'purple',
+  Green = 'green',
+  Amber = 'amber',
+  Rose = 'rose',
+}
+
 export enum EditorLayout {
   Document = 'document',
   Editor = 'editor',
@@ -25,15 +52,18 @@ interface EditorSettings {
   appearance: {
     layout: EditorLayout;
     theme: EditorTheme;
+    buttonSize: ButtonSize,
+    borderRadius: BorderRadius;
+    toolbarBgColor: ToolbarBgColor;
   };
 }
 
 const defaultSettings: EditorSettings = {
-  toolbar: new Array(20).fill(true),
+  toolbar: new Array(26).fill(true),
   floatingToolbar: new Array(8).fill(true), 
   ui: {
-    showStatusBar: true,
-    showInfoBar: true,
+    showStatusBar: false,
+    showInfoBar: false,
     showSlashMenu: true,
     showEmojiPicker: true,
     showFloatingToolbar: false,
@@ -41,6 +71,9 @@ const defaultSettings: EditorSettings = {
   appearance: {
     layout: EditorLayout.Document,
     theme: EditorTheme.Light,
+    buttonSize: ButtonSize.Medium,
+    borderRadius: BorderRadius.Large,
+    toolbarBgColor: ToolbarBgColor.White,
   },
 };
 

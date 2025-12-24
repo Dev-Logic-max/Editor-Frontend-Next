@@ -18,10 +18,12 @@ import { TableInsertModal } from '@/components/services/TableInsertModal';
 import { ToolbarEmojiPicker } from '@/components/common/ToolbarEmojiPicker';
 import { MediaLibraryProModal } from '@/components/media/MediaLibraryProModal';
 
-import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser,  FaQuoteRight, FaCode, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaStrikethrough, FaNetworkWired, FaAlignJustify } from 'react-icons/fa';
+import { FaBold, FaItalic, FaUnderline, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaUndo, FaRedo, FaEraser, FaQuoteRight, FaCode, FaLink, FaImage, FaTable, FaPrint, FaDownload, FaStrikethrough, FaNetworkWired, FaAlignJustify } from 'react-icons/fa';
 import { BsBoxSeamFill } from "react-icons/bs";
 
-import { EditorLayout, useEditorSettings } from '@/hooks/useEditorSettings';
+import { EditorLayout, useEditorSettings, ButtonSize } from '@/hooks/useEditorSettings';
+import { AIAnalysisModal } from '@/components/extensions/aiAnalysisModal';
+import { MdOutlineDocumentScanner } from 'react-icons/md';
 
 interface EditorToolbarProps {
   plan: string;
@@ -70,6 +72,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [flowModalOpen, setFlowModalOpen] = useState(false);
   const [editingFlowId, setEditingFlowId] = useState<string | null>(null);
+  const [analysisModalOpen, setAnalysisModalOpen] = useState(false);
 
   const layout = settings.appearance.layout;
 
@@ -107,6 +110,66 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
     tap: { scale: 0.92, transition: { duration: 0.1 } },
   };
 
+  const getButtonSize = () => {
+    const buttonSize = settings.appearance.buttonSize;
+    switch (buttonSize) {
+      case 'extra-small':
+        return 'icon-sm';
+      case 'small':
+        return 'sm';
+      case 'medium':
+        return 'default';
+      case 'large':
+        return 'lg';
+      default:
+        return 'icon-lg';
+    }
+  };
+
+  const getToolbarColor = (active?: boolean) => {
+    const bgColor = settings.appearance.toolbarBgColor;
+    switch (bgColor) {
+      case 'white':
+        return `bg-white/50 ${active && 'border-black-200 bg-black-100/50'}`;
+      case 'gray':
+        return `bg-gray-50/50 ${active && 'border-gray-200 bg-gray-100/50'}`;
+      case 'blue':
+        return `bg-blue-50/50 ${active && 'border-blue-200 bg-blue-100/50'}`;
+      case 'purple':
+        return `bg-purple-50/50 ${active && 'border-purple-200 bg-purple-100/50'}`;
+      case 'green':
+        return `bg-green-50/50 ${active && 'border-green-200 bg-green-100/50'}`;
+      case 'amber':
+        return `bg-amber-50/50 ${active && 'border-amber-200 bg-amber-100/50'}`;
+      case 'rose':
+        return `bg-rose-50/50 ${active && 'border-rose-200 bg-rose-100/50'}`;
+      default:
+        return 'bg-white';
+    }
+  };
+
+  const getBorderRadius = () => {
+    const radius = settings.appearance.borderRadius;
+    switch (radius) {
+      case 'none':
+        return 'rounded-none';
+      case 'sm':
+        return 'rounded-sm';
+      case 'md':
+        return 'rounded-md';
+      case 'lg':
+        return 'rounded-lg';
+      case 'xl':
+        return 'rounded-xl';
+      case '2xl':
+        return 'rounded-2xl';
+      case 'full':
+        return 'rounded-full';
+      default:
+        return 'rounded-lg';
+    }
+  };
+
   const IconButton = ({ onClick, active, title, icon: Icon, custom, disabled = false }: {
     onClick: () => void;
     active?: boolean;
@@ -118,7 +181,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
       <Button
         variant="ghost"
-        size="icon-sm"
+        size={`${getButtonSize()}`}
         disabled={disabled}
         onMouseDown={(e) => {
           // Prevent button from stealing focus
@@ -129,7 +192,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           onClick();
         }}
         title={title}
-        className={`p-2 rounded-lg transition-all ${active ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-300' : 'hover:bg-gray-100 text-gray-700'} ${custom}`}
+        className={`${getToolbarColor(active)} transition-all ${active ? 'border shadow' : 'hover:bg-gray-100 text-gray-700'} ${custom}`}
       >
         <Icon />
       </Button>
@@ -174,7 +237,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
 
   return (
     <>
-      <div className={`sticky top-0 z-10 bg-white/95 backdrop-blur-md flex flex-wrap items-center justify-center md:justify-between transition-all ${layout === EditorLayout.Document ? 'rounded-xl border px-1 py-0.5 m-2' : 'shadow-sm md:p-3 border-b'}`}>
+      <div className={`sticky top-0 z-10 bg-white/95 backdrop-blur-md flex flex-wrap items-center justify-center md:justify-between transition-all ${layout === EditorLayout.Document ? `${getBorderRadius()} border p-1 m-2` : 'shadow-sm md:p-3 border-b'}`}>
         {/* Left Section */}
         <div className="flex flex-wrap items-center gap-1">
           {isButtonEnabled(0) && (
@@ -210,7 +273,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
             />
           )}
           {isButtonEnabled(3) && (
-          <ColorPicker editor={editor} />
+            <ColorPicker editor={editor} />
           )}
         </div>
 
@@ -361,7 +424,7 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
 
         {/* Divider */}
         <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
-          
+
         <div className="flex items-center gap-1">
           <IconButton
             icon={FaNetworkWired}
@@ -369,6 +432,13 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
             onClick={() => setFlowModalOpen(true)}
           />
         </div>
+
+        {/* AI Analysis Button */}
+        <IconButton
+          icon={MdOutlineDocumentScanner}
+          title="AI Content Analysis & Humanization"
+          onClick={() => setAnalysisModalOpen(true)}
+        />
 
         {/* Divider */}
         <div className="hidden md:block w-px h-6 bg-gray-300 mx-1" />
@@ -447,6 +517,14 @@ export function EditorToolbar({ plan, editor, document, documentId, onAIStart, o
           />
         </>)
       }
+
+      <AIAnalysisModal
+        isOpen={analysisModalOpen}
+        onClose={() => setAnalysisModalOpen(false)}
+        editor={editor}
+        documentContent={editor?.getText() || ''}
+        plan={'ultra'}
+      />
 
       <FlowDiagramModal
         isOpen={flowModalOpen}
